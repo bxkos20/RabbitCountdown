@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuenta Atrás</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* =========================================
+           1. ESTILOS GENERALES Y FONDO
+           ========================================= */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative; 
+        }
+
+        /* =========================================
+           2. CONTENEDOR PRINCIPAL (Glassmorphism)
+           ========================================= */
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px 60px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            z-index: 2; 
+            position: relative; 
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        /* --- Controles (Input Hora y Botón Iniciar) --- */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        input[type="time"], input[type="number"], input[type="text"] {
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            border: none;
+            border-radius: 10px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+
+        input[type="time"] { cursor: pointer; }
+
+        #startBtn {
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            font-family: inherit;
+            font-weight: 500;
+            border: none;
+            border-radius: 10px;
+            background-color: #ff4757;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+            min-width: 120px;
+        }
+
+        #startBtn:hover {
+            background-color: #ff6b81;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.6);
+        }
+
+        #startBtn.stop-btn {
+            background-color: #747d8c; 
+            box-shadow: none;
+            transform: none;
+        }
+
+        #startBtn.stop-btn:hover { background-color: #57606f; }
+
+        /* --- Cajas de Cuenta Atrás --- */
+        .countdown {
+            display: none;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .time-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 80px;
+            transition: all 0.3s ease;
+        }
+
+        .time-box span {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 5px;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .time-box small {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        /* --- Estado de Peligro (Último minuto) --- */
+        .countdown.danger .time-box span {
+            color: #ff4757;
+            text-shadow: 0 0 15px rgba(255, 71, 87, 0.6);
+        }
+
+        #message {
+            display: none;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2ed573;
+            margin-top: 20px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* =========================================
+           3. MENÚ DE AJUSTES Y BOTÓN EXTERNO
+           ========================================= */
+        #settingsBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        #settingsBtn:hover { background: rgba(255, 255, 255, 0.3); }
+
+        .modal {
+            display: none; 
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            min-width: 320px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .setting-group {
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .setting-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        #toggleImagesBtn {
+            background-color: #2ed573; 
+            font-size: 1rem;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        #toggleImagesBtn.off { background-color: #ff4757; }
+
+        #closeSettingsBtn {
+            padding: 10px 25px;
+            background-color: transparent;
+            border: 1px solid white;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        #closeSettingsBtn:hover {
+            background-color: white;
+            color: #1e3c72;
+        }
+
+        /* =========================================
+           4. ELEMENTOS DE ANIMACIÓN Y FÍSICAS
+           ========================================= */
+        .bouncing-image {
+            display: none; 
+            position: absolute;
+            
+            /* -- AJUSTE DE ASPECT RATIO -- */
+            width: 75px; 
+            height: 75px; /* Altura forzada */
+            object-fit: cover; /* Recorta la imagen para llenar el cuadrado perfecto */
+            background-color: rgba(255, 255, 255, 0.1); /* Por si la imagen tiene transparencia */
+            /* ----------------------------- */
+
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4); 
+            z-index: 1; 
+        }
+
+        #img2 { filter: invert(1); }
+
+        #explosion {
+            display: none;
+            position: absolute;
+            font-size: 8rem;
+            z-index: 10;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        @keyframes explodeAnim {
+            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+            40% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+
+        #flashbang {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: white;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        @keyframes flashAnim {
+            0% { opacity: 1; }
+            40% { opacity: 1; } 
+            100% { opacity: 0; } 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Botón Ajustes -->
+    <button id="settingsBtn" title="Ajustes">⚙️</button>
+
+    <!-- Menú Modal de Ajustes -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <h2>Ajustes</h2>
+            
+            <div class="setting-group">
+                <label>Desfase del timbre (Segundos)</label>
+                <input type="number" id="offsetInput" value="0" style="width: 120px; text-align: center;">
+            </div>
+
+            <div class="setting-group">
+                <label>Mensaje final personalizable</label>
+                <input type="text" id="customMessageInput" value="¡El tiempo ha terminado! 🎉" style="width: 90%; text-align: center;">
+            </div>
+
+            <div class="setting-group">
+                <label>URL de la imagen de rebote</label>
+                <input type="text" id="customUrlInput" style="width: 90%; font-size: 0.8rem;">
+            </div>
+
+            <div class="setting-group">
+                <label>Animaciones (Imágenes)</label>
+                <button id="toggleImagesBtn">Imágenes: ON</button>
+            </div>
+
+            <button id="closeSettingsBtn">Cerrar Ajustes</button>
+        </div>
+    </div>
+
+    <!-- Elementos rebotando y efectos -->
+    <img id="img1" class="bouncing-image" alt="Imagen Normal">
+    <img id="img2" class="bouncing-image" alt="Imagen Invertida">
+    <div id="explosion">💥</div>
+    <div id="flashbang"></div>
+
+    <!-- Interfaz Principal -->
+    <div class="container" id="mainContainer">
+        <h1>Cuenta Atrás</h1>
+        <div class="controls">
+            <input type="time" id="timeInput" required>
+            <button id="startBtn">Iniciar</button>
+        </div>
+
+        <div class="countdown" id="countdownDisplay">
+            <div class="time-box">
+                <span id="hours">00</span>
+                <small>Horas</small>
+            </div>
+            <div class="time-box">
+                <span id="minutes">00</span>
+                <small>Minutos</small>
+            </div>
+            <div class="time-box">
+                <span id="seconds">00</span>
+                <small>Segundos</small>
+            </div>
+        </div>
+
+        <div id="message"></div>
+    </div>
+
+    <!-- =========================================
+         JAVASCRIPT LÓGICO Y MOTOR
+         ========================================= -->
+    <script>
+        // --- 1. ESTADO Y VARIABLES GLOBALES ---
+        let countdownInterval = null;
+        let animationFrame = null;
+        let flashTimeout = null;
+        let respawnTimeout = null;
+
+        let isRunning = false;
+        let imagesAlive = false;
+        let imagesEnabled = true;
+        let targetDate = null; 
+        let containerRect = null; 
+
+        const defaultUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.kym-cdn.com%2Fphotos%2Fimages%2Foriginal%2F003%2F136%2F289%2F782.jpg&f=1&nofb=1&ipt=e251919d7b84b303d27ec7336b0e609f7e6d6f02728fca0a66319ca9a4c37c25";
+
+        const objImg1 = { el: document.getElementById('img1'), x: 0, y: 0, vx: 0, vy: 0, w: 75, h: 75 };
+        const objImg2 = { el: document.getElementById('img2'), x: 0, y: 0, vx: 0, vy: 0, w: 75, h: 75 };
+        
+        // --- 2. REFERENCIAS AL DOM ---
+        const ui = {
+            container: document.getElementById('mainContainer'),
+            explosion: document.getElementById('explosion'),
+            flashbang: document.getElementById('flashbang'),
+            startBtn: document.getElementById('startBtn'),
+            timeInput: document.getElementById('timeInput'),
+            countdownDisplay: document.getElementById('countdownDisplay'),
+            message: document.getElementById('message'),
+            hours: document.getElementById('hours'),
+            minutes: document.getElementById('minutes'),
+            seconds: document.getElementById('seconds')
+        };
+
+        const settings = {
+            btn: document.getElementById('settingsBtn'),
+            modal: document.getElementById('settingsModal'),
+            closeBtn: document.getElementById('closeSettingsBtn'),
+            offsetInput: document.getElementById('offsetInput'),
+            messageInput: document.getElementById('customMessageInput'),
+            urlInput: document.getElementById('customUrlInput'),
+            toggleImagesBtn: document.getElementById('toggleImagesBtn')
+        };
+
+        // --- 3. GESTIÓN DE ALMACENAMIENTO (LocalStorage) ---
+        function loadSettings() {
+            settings.offsetInput.value = localStorage.getItem('offsetSecs') || 0;
+            settings.messageInput.value = localStorage.getItem('customMessage') || "¡El tiempo ha terminado! 🎉";
+            
+            const savedUrl = localStorage.getItem('customUrl') || defaultUrl;
+            settings.urlInput.value = savedUrl;
+            objImg1.el.src = savedUrl;
+            objImg2.el.src = savedUrl;
+
+            const savedImagesEnabled = localStorage.getItem('imagesEnabled');
+            if (savedImagesEnabled !== null) {
+                imagesEnabled = savedImagesEnabled === 'true';
+                if (!imagesEnabled) {
+                    settings.toggleImagesBtn.innerText = "Imágenes: OFF";
+                    settings.toggleImagesBtn.classList.add('off');
+                }
+            }
+        }
+        
+        function saveSetting(key, value) {
+            localStorage.setItem(key, value);
+        }
+
+        // --- 4. EVENTOS DE LA INTERFAZ ---
+        loadSettings();
+
+        settings.btn.addEventListener('click', () => settings.modal.style.display = 'flex');
+        settings.closeBtn.addEventListener('click', () => settings.modal.style.display = 'none');
+
+        settings.offsetInput.addEventListener('input', (e) => saveSetting('offsetSecs', e.target.value));
+        settings.messageInput.addEventListener('input', (e) => saveSetting('customMessage', e.target.value));
+        settings.urlInput.addEventListener('input', (e) => {
+            const newUrl = e.target.value.trim() || defaultUrl;
+            objImg1.el.src = newUrl;
+            objImg2.el.src = newUrl;
+            saveSetting('customUrl', newUrl);
+        });
+
+        settings.toggleImagesBtn.addEventListener('click', () => {
+            imagesEnabled = !imagesEnabled;
+            saveSetting('imagesEnabled', imagesEnabled);
+
+            if (imagesEnabled) {
+                settings.toggleImagesBtn.innerText = "Imágenes: ON";
+                settings.toggleImagesBtn.classList.remove('off');
+                if (isRunning) spawnImages();
+            } else {
+                settings.toggleImagesBtn.innerText = "Imágenes: OFF";
+                settings.toggleImagesBtn.classList.add('off');
+                hideImages();
+            }
+        });
+
+        // --- 5. MOTOR DE FÍSICAS Y ANIMACIONES ---
+        function getRandSpeed() { return (Math.random() * 4 + 3) * (Math.random() > 0.5 ? 1 : -1); }
+        
+        function updateCollisionCache() {
+            containerRect = ui.container.getBoundingClientRect();
+        }
+        window.addEventListener('resize', updateCollisionCache);
+
+        function hideImages() {
+            imagesAlive = false;
+            objImg1.el.style.display = 'none';
+            objImg2.el.style.display = 'none';
+            clearTimeout(respawnTimeout); 
+        }
+
+        function spawnImages() {
+            imagesAlive = true;
+            objImg1.el.style.display = 'block';
+            objImg2.el.style.display = 'block';
+            
+            objImg1.x = 0; objImg1.y = 0; 
+            objImg2.x = window.innerWidth - 75; objImg2.y = window.innerHeight - 75; 
+            
+            objImg1.vx = getRandSpeed(); objImg1.vy = getRandSpeed();
+            objImg2.vx = getRandSpeed(); objImg2.vy = getRandSpeed();
+        }
+
+        function handleObstacleCollision(img, rect) {
+            if (!rect) return; 
+
+            if (img.x < rect.right && img.x + img.w > rect.left &&
+                img.y < rect.bottom && img.y + img.h > rect.top) {
+                
+                const overlapL = (img.x + img.w) - rect.left;
+                const overlapR = rect.right - img.x;
+                const overlapT = (img.y + img.h) - rect.top;
+                const overlapB = rect.bottom - img.y;
+
+                const minOverlap = Math.min(overlapL, overlapR, overlapT, overlapB);
+
+                if (minOverlap === overlapL)      { img.x = rect.left - img.w; img.vx = -Math.abs(img.vx); }
+                else if (minOverlap === overlapR) { img.x = rect.right;        img.vx = Math.abs(img.vx); }
+                else if (minOverlap === overlapT) { img.y = rect.top - img.h;  img.vy = -Math.abs(img.vy); }
+                else if (minOverlap === overlapB) { img.y = rect.bottom;       img.vy = Math.abs(img.vy); }
+            }
+        }
+
+        function moveImage(img) {
+            img.x += img.vx;
+            img.y += img.vy;
+
+            // Como hemos forzado 75x75 en CSS, w y h son constantes en 75
+            // Pero usamos el rect por pura seguridad
+            const rect = img.el.getBoundingClientRect();
+            img.w = rect.width;
+            img.h = rect.height;
+
+            const maxW = window.innerWidth;
+            const maxH = window.innerHeight;
+            
+            if (img.x <= 0) { img.x = 0; img.vx = Math.abs(img.vx); }
+            if (img.x + img.w >= maxW) { img.x = maxW - img.w; img.vx = -Math.abs(img.vx); }
+            if (img.y <= 0) { img.y = 0; img.vy = Math.abs(img.vy); }
+            if (img.y + img.h >= maxH) { img.y = maxH - img.h; img.vy = -Math.abs(img.vy); }
+
+            handleObstacleCollision(img, containerRect);
+
+            img.el.style.left = img.x + 'px';
+            img.el.style.top = img.y + 'px';
+        }
+
+        function triggerExplosion() {
+            hideImages(); 
+
+            const cX = (Math.max(objImg1.x, objImg2.x) + Math.min(objImg1.x + objImg1.w, objImg2.x + objImg2.w)) / 2;
+            const cY = (Math.max(objImg1.y, objImg2.y) + Math.min(objImg1.y + objImg1.h, objImg2.y + objImg2.h)) / 2;
+
+            ui.explosion.style.left = cX + 'px';
+            ui.explosion.style.top = cY + 'px';
+            ui.explosion.style.display = 'block';
+            
+            ui.explosion.style.animation = 'none';
+            ui.explosion.offsetHeight; 
+            ui.explosion.style.animation = 'explodeAnim 0.7s forwards';
+
+            ui.flashbang.style.display = 'block';
+            ui.flashbang.style.animation = 'none';
+            ui.flashbang.offsetHeight;
+            ui.flashbang.style.animation = 'flashAnim 5s forwards';
+
+            flashTimeout = setTimeout(() => { ui.flashbang.style.display = 'none'; }, 5000);
+            respawnTimeout = setTimeout(() => { if (isRunning && imagesEnabled) spawnImages(); }, 15000);
+        }
+
+        function gameLoop() {
+            if (!isRunning) return;
+
+            if (imagesAlive) {
+                moveImage(objImg1);
+                moveImage(objImg2);
+
+                if (objImg1.w > 0 && objImg2.w > 0) {
+                    if (objImg1.x < objImg2.x + objImg2.w && objImg1.x + objImg1.w > objImg2.x &&
+                        objImg1.y < objImg2.y + objImg2.h && objImg1.y + objImg1.h > objImg2.y) {
+                        triggerExplosion();
+                    }
+                }
+            }
+            animationFrame = requestAnimationFrame(gameLoop);
+        }
+
+        // --- 6. LÓGICA DE LA CUENTA ATRÁS ---
+        function stopApp() {
+            clearInterval(countdownInterval);
+            cancelAnimationFrame(animationFrame);
+            clearTimeout(flashTimeout);
+            clearTimeout(respawnTimeout);
+            
+            isRunning = false;
+            
+            ui.startBtn.innerText = "Iniciar";
+            ui.startBtn.classList.remove('stop-btn');
+            
+            ui.countdownDisplay.style.display = 'none';
+            ui.countdownDisplay.classList.remove('danger');
+            ui.message.style.display = 'none';
+            ui.explosion.style.display = 'none';
+            ui.flashbang.style.display = 'none'; 
+            
+            hideImages();
+            ui.timeInput.value = ''; 
+        }
+
+        ui.startBtn.addEventListener('click', function() {
+            if (isRunning) { stopApp(); return; }
+            if (!ui.timeInput.value) { alert('Por favor, selecciona una hora.'); return; }
+
+            isRunning = true;
+            
+            ui.startBtn.innerText = "Detener";
+            ui.startBtn.classList.add('stop-btn');
+            ui.message.style.display = 'none';
+            ui.countdownDisplay.style.display = 'flex';
+            ui.countdownDisplay.classList.remove('danger');
+            ui.explosion.style.display = 'none';
+            ui.flashbang.style.display = 'none';
+            
+            updateCollisionCache(); 
+
+            if (imagesEnabled) spawnImages();
+            animationFrame = requestAnimationFrame(gameLoop);
+
+            const [inputHours, inputMinutes] = ui.timeInput.value.split(':');
+            targetDate = new Date();
+            targetDate.setHours(parseInt(inputHours), parseInt(inputMinutes), 0, 0);
+
+            if (targetDate.getTime() < new Date().getTime()) {
+                targetDate.setDate(targetDate.getDate() + 1); 
+            }
+
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(function() {
+                const now = new Date().getTime();
+                const offsetSecs = parseInt(settings.offsetInput.value) || 0;
+                
+                const distance = targetDate.getTime() + (offsetSecs * 1000) - now;
+
+                if (distance <= 0) {
+                    stopApp(); 
+                    const customMsg = settings.messageInput.value.trim();
+                    ui.message.innerText = customMsg !== "" ? customMsg : "¡El tiempo ha terminado! 🎉";
+                    ui.message.style.display = 'block';
+                    return;
+                }
+
+                if (distance <= 60000) ui.countdownDisplay.classList.add('danger');
+                else ui.countdownDisplay.classList.remove('danger');
+
+                const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+                ui.hours.innerText = h.toString().padStart(2, '0');
+                ui.minutes.innerText = m.toString().padStart(2, '0');
+                ui.seconds.innerText = s.toString().padStart(2, '0');
+
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
