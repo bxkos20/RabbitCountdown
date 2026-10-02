@@ -13,6 +13,9 @@
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: #ffffff;
             height: 100vh;
             margin: 0;
@@ -23,6 +26,7 @@
             overflow: hidden;
             position: relative; 
             gap: 15px;
+            transition: background 0.5s ease;
         }
 
         #toast {
@@ -33,20 +37,20 @@
             z-index: 1000; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); font-weight: 500;
         }
         #toast.show { top: 20px; }
-        #toast.danger { background: rgba(255, 71, 87, 0.8); border-color: #ff4757; }
+        #toast.danger { background: rgba(255, 71, 87, 0.9); border-color: #ff4757; }
         #toast button { background: rgba(0,0,0,0.3); border: none; color: white; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
 
         /* =========================================
            2. CONTENEDORES Y RELOJ PRINCIPAL
            ========================================= */
         .container {
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.2); padding: 25px 40px; border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); text-align: center; max-width: 500px; width: 90%;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); text-align: center; max-width: 500px; width: 90%;
             z-index: 2; position: relative; 
         }
 
-        h1 { margin-top: 0; font-size: 2rem; margin-bottom: 20px; font-weight: 700; }
+        h1 { margin-top: 0; font-size: 2rem; margin-bottom: 20px; font-weight: 700; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
         input[type="time"], input[type="number"], input[type="text"], select {
             padding: 10px 15px; font-size: 1rem; font-family: inherit; border: none; border-radius: 10px;
@@ -63,16 +67,16 @@
 
         .countdown { display: none; justify-content: center; gap: 15px; }
         .time-box {
-            display: flex; flex-direction: column; align-items: center; background: rgba(0, 0, 0, 0.25);
-            padding: 15px; border-radius: 15px; min-width: 60px; transition: all 0.3s ease;
+            display: flex; flex-direction: column; align-items: center; background: rgba(0, 0, 0, 0.4);
+            padding: 15px; border-radius: 15px; min-width: 60px; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1);
         }
         .time-box span { font-size: 2.5rem; font-weight: 700; line-height: 1; margin-bottom: 5px; transition: color 0.3s ease; }
         .time-box small { font-size: 0.8rem; text-transform: uppercase; opacity: 0.8; }
         .countdown.danger .time-box span { color: #ff4757; text-shadow: 0 0 15px rgba(255, 71, 87, 0.6); }
-        #message { display: none; font-size: 1.5rem; font-weight: 700; color: #2ed573; margin-top: 15px; animation: pulse 1.5s infinite; }
+        #message { display: none; font-size: 1.5rem; font-weight: 700; color: #2ed573; margin-top: 15px; animation: pulse 1.5s infinite; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
         /* =========================================
-           3. SISTEMA DE FICHAS (CHIPS) GLOBALES
+           3. SISTEMA DE FICHAS GLOBALES Y BOTONES
            ========================================= */
         .chip-selector { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
         .s-chip {
@@ -83,29 +87,37 @@
         .s-chip:hover { transform: scale(1.1); }
         .s-chip.active { transform: scale(1.2); border: 2px solid white; box-shadow: 0 0 15px rgba(255,255,255,0.8); z-index: 5;}
         
-        .ch-1 { background-color: #7f8c8d; }  
-        .ch-5 { background-color: #e74c3c; }  
-        .ch-10 { background-color: #3498db; } 
-        .ch-25 { background-color: #2ecc71; } 
-        .ch-100 { background-color: #2c3e50; } 
-        .ch-500 { background-color: #8e44ad; } 
+        .ch-1 { background-color: #7f8c8d; } .ch-5 { background-color: #e74c3c; } .ch-10 { background-color: #3498db; } 
+        .ch-25 { background-color: #2ecc71; } .ch-100 { background-color: #2c3e50; } .ch-500 { background-color: #8e44ad; } 
+
+        #settingsBtn {
+            position: fixed; top: 20px; right: 20px; z-index: 10; background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 50%; width: 45px; height: 45px;
+            font-size: 1.5rem; cursor: pointer; color: white; display: flex; justify-content: center; align-items: center;
+            transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        #settingsBtn:hover { background: rgba(255, 255, 255, 0.4); transform: scale(1.1); }
 
         /* =========================================
-           4. JUEGOS DEL CASINO
+           4. JUEGOS DEL CASINO Y TIENDA
            ========================================= */
         .game-container { padding: 15px 20px; display: none; max-width: 550px; width: 90%; }
-        .game-container h2 { font-size: 1.2rem; margin: 0 0 10px 0; }
-        .coins-display { font-size: 1.1rem; font-weight: bold; color: #ffd32a; margin-bottom: 10px; }
+        .game-container h2 { font-size: 1.2rem; margin: 0 0 10px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .coins-display { font-size: 1.1rem; font-weight: bold; color: #ffd32a; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         
-        .help-btn {
-            position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+        /* Botones de esquina dentro del casino */
+        .corner-btn {
+            position: absolute; top: 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
             border-radius: 50%; width: 28px; height: 28px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
             display: flex; justify-content: center; align-items: center; font-family: inherit; z-index: 5;
         }
-        .help-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.1); }
+        .corner-btn:hover { background: rgba(255,255,255,0.5); transform: scale(1.1); }
+        .btn-left { left: 15px; }
+        .btn-right { right: 15px; }
 
-        .c-btn { padding: 10px 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: white; transition: 0.2s;}
+        .c-btn { padding: 10px 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: white; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.3);}
         .c-btn:disabled { background-color: #747d8c !important; cursor: not-allowed; opacity: 0.7;}
+        .c-btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
 
         /* --- Ruleta --- */
         .r-wrapper { display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; user-select: none; width: 100%; }
@@ -119,16 +131,16 @@
             border: 1px solid rgba(255,255,255,0.3); transition: 0.1s; display: flex; align-items: center; 
             justify-content: center; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
-        .r-cell:hover { opacity: 0.8; transform: scale(0.95); z-index: 5;}
+        .r-cell:hover { opacity: 0.8; transform: scale(0.95); z-index: 5; border-color: white;}
         .r-zero { grid-row: 1 / span 3; grid-column: 1; }
-        .c-red { background-color: #e84118; } .c-black { background-color: #2f3640; } .c-green { background-color: #4cd137; }
-        .c-blue { background-color: #0097e6; } .c-dark { background-color: #353b48; }
+        .c-red { background-color: rgba(232, 65, 24, 0.9); } .c-black { background-color: rgba(47, 54, 64, 0.9); } .c-green { background-color: rgba(76, 209, 55, 0.9); }
+        .c-blue { background-color: rgba(0, 151, 230, 0.9); } .c-dark { background-color: rgba(53, 59, 72, 0.9); }
         
         .board-chip {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: #fbc531; color: black; border-radius: 50%; width: 18px; height: 18px;
             font-size: 0.55rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
-            border: 1px solid #e1b12c; pointer-events: none; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            border: 1px solid #e1b12c; pointer-events: none; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.6);
         }
 
         #rouletteSpinOverlay {
@@ -136,34 +148,29 @@
             border-radius: 20px; display: none; flex-direction: column; justify-content: center; align-items: center;
             z-index: 20; backdrop-filter: blur(5px);
         }
-        .spin-number { font-size: 5rem; font-weight: bold; margin-bottom: 5px; }
+        .spin-number { font-size: 5rem; font-weight: bold; margin-bottom: 5px; text-shadow: 0 4px 10px rgba(0,0,0,0.8); }
 
         /* --- Blackjack --- */
         #bjBettingArea { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 10px;}
         #bjGameArea { display: none; flex-direction: column; gap: 15px; }
         
-        .bj-hand { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; min-height: 90px; flex: 1; min-width: 120px;}
-        .bj-hand p { margin: 0 0 5px 0; font-weight: bold; font-size: 0.9rem;}
+        .bj-hand { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 10px; min-height: 90px; flex: 1; min-width: 120px; border: 1px solid rgba(255,255,255,0.1);}
+        .bj-hand p { margin: 0 0 5px 0; font-weight: bold; font-size: 0.9rem; text-shadow: 0 1px 3px rgba(0,0,0,0.8);}
         .bj-cards { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;}
         
         .playing-card {
             background: white; border-radius: 5px; width: 40px; height: 60px; display: flex;
             align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem;
-            color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 1px solid #ccc; position: relative;
+            color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.6); border: 1px solid #ccc; position: relative;
         }
         .card-red { color: #e84118; }
         .card-hidden { background: repeating-linear-gradient(45deg, #2980b9, #2980b9 5px, #3498db 5px, #3498db 10px); color: transparent; border: 1px solid white;}
 
         /* =========================================
-           5. MODALES (AJUSTES Y AYUDA)
+           5. MODALES (AJUSTES, TIENDA, AYUDA)
            ========================================= */
-        #settingsBtn {
-            position: fixed; top: 20px; right: 20px; z-index: 10; background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 50%; width: 45px; height: 45px;
-            font-size: 1.5rem; cursor: pointer; color: white; display: flex; justify-content: center; align-items: center;
-        }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 100; justify-content: center; align-items: center; }
-        .modal-content { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.3); padding: 25px; border-radius: 20px; text-align: center; min-width: 320px; max-width: 90%; max-height: 90vh; overflow-y: auto;}
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(5px);}
+        .modal-content { background: rgba(30, 40, 60, 0.85); border: 1px solid rgba(255, 255, 255, 0.3); padding: 25px; border-radius: 20px; text-align: center; min-width: 320px; max-width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 15px 50px rgba(0,0,0,0.5);}
         
         .tabs { display: flex; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.3); margin-bottom: 15px; }
         .tab-btn { background: transparent; border: none; color: white; font-size: 1rem; padding: 10px 15px; cursor: pointer; opacity: 0.6; }
@@ -172,23 +179,29 @@
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .setting-group { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; margin-bottom: 15px; }
+        .setting-group { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05);}
         .setting-group label { display: block; margin-bottom: 5px; opacity: 0.9; }
 
-        .toggle-btn { background-color: #ff4757; padding: 10px 20px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s;}
+        .toggle-btn { background-color: #ff4757; padding: 10px 20px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.3);}
         .toggle-btn.on { background-color: #2ed573; }
-        .close-modal-btn { padding: 10px 25px; background: transparent; border: 1px solid white; color: white; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; transition: 0.3s;}
+        .close-modal-btn { padding: 10px 25px; background: rgba(255,255,255,0.1); border: 1px solid white; color: white; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; transition: 0.3s;}
         .close-modal-btn:hover { background-color: white; color: #1e3c72; }
+
+        /* Tienda de Fondos Grid */
+        .store-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .store-item { background: rgba(0,0,0,0.4); border-radius: 10px; padding: 10px; border: 1px solid rgba(255,255,255,0.2); transition: 0.3s;}
+        .store-item:hover { border-color: rgba(255,255,255,0.5); transform: translateY(-2px); }
+        .store-preview { width: 100%; height: 80px; border-radius: 8px; margin-bottom: 10px; background-size: cover !important; background-position: center !important; border: 1px solid rgba(0,0,0,0.5);}
 
         /* =========================================
            6. ANIMACIONES (IMÁGENES, EXPLOSIÓN)
            ========================================= */
         .bouncing-image {
             display: none; position: absolute; width: 75px; height: 75px; object-fit: cover;
-            background-color: rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 1; 
+            background-color: rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.6); z-index: 1; 
         }
         #img2 { filter: invert(1); }
-        #explosion { display: none; position: absolute; font-size: 8rem; z-index: 10; transform: translate(-50%, -50%); pointer-events: none; }
+        #explosion { display: none; position: absolute; font-size: 8rem; z-index: 10; transform: translate(-50%, -50%); pointer-events: none; filter: drop-shadow(0 0 20px rgba(255,100,0,0.8));}
         @keyframes explodeAnim { 0% { transform: scale(0.2); opacity: 1; } 40% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
         #flashbang { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: white; z-index: 9999; pointer-events: none; }
     </style>
@@ -197,9 +210,24 @@
 
     <div id="toast"><span id="toastMsg"></span><button id="closeToastBtn">✖</button></div>
 
+    <!-- Botones Flotantes Generales -->
     <button id="settingsBtn" title="Ajustes">⚙️</button>
 
-    <!-- Menú Modal de Ajustes -->
+    <!-- Modal: Tienda de Fondos -->
+    <div id="storeModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2 style="margin-bottom: 5px;">Tienda de Fondos 🛒</h2>
+            <div class="coins-display" style="margin-bottom: 20px;">Saldo: <span class="coin-display">0</span> 🪙</div>
+            
+            <div class="store-grid" id="bgStoreGrid">
+                <!-- Se rellena por JS -->
+            </div>
+            
+            <button id="closeStoreBtn" class="close-modal-btn">Volver al Casino</button>
+        </div>
+    </div>
+
+    <!-- Modal: Ajustes -->
     <div id="settingsModal" class="modal">
         <div class="modal-content">
             <h2>Ajustes</h2>
@@ -246,14 +274,15 @@
         </div>
     </div>
 
-    <!-- Modal de Ayuda (Casino) -->
+    <!-- Modal: Ayuda -->
     <div id="helpModal" class="modal">
         <div class="modal-content" style="max-width: 380px;">
             <h2 style="margin-bottom: 15px;">¿Cómo ganar monedas? 🪙</h2>
             <div style="text-align: left; font-size: 0.95rem; opacity: 0.9; margin-bottom: 25px; line-height: 1.6;">
                 <p>⚠️ <b>Regla de Oro:</b><br>Solo recibirás monedas si el <b>cronómetro está en marcha Y tienes algún juego de casino activado</b>.</p>
                 <p><b>⏱️ Tiempo Activo:</b><br>Recibirás +1 moneda automáticamente por cada minuto que pase.</p>
-                <p><b>💥 Choques Lucrativos:</b><br>Si también activas las <i>Imágenes Rebotantes</i>, ganarás +1 moneda extra cada vez que colisionen.</p>
+                <p><b>💥 Choques Lucrativos:</b><br>Si activas las <i>Imágenes Rebotantes</i>, ganarás +1 moneda extra cada vez que colisionen.</p>
+                <p><b>💲 Tienda:</b><br>Tus monedas también sirven para comprar fondos exclusivos pulsando el botón <b>$</b> en la mesa de apuestas.</p>
             </div>
             <button id="closeHelpBtn" class="close-modal-btn" style="background-color: #2ed573; border: none;">¡Entendido!</button>
         </div>
@@ -282,7 +311,9 @@
 
     <!-- ================== JUEGO: RULETA ================== -->
     <div class="container game-container" id="rouletteContainer">
-        <button class="help-btn casinoHelpBtn" title="Ayuda">?</button>
+        <button class="corner-btn btn-left casinoStoreBtn" title="Tienda de Fondos">$</button>
+        <button class="corner-btn btn-right casinoHelpBtn" title="Ayuda">?</button>
+        
         <div id="rouletteSpinOverlay">
             <div class="spin-number" id="spinNumberDisplay">0</div>
             <div class="spin-text" id="spinTextDisplay">Girando la ruleta...</div>
@@ -325,7 +356,8 @@
 
     <!-- ================== JUEGO: BLACKJACK ================== -->
     <div class="container game-container" id="blackjackContainer">
-        <button class="help-btn casinoHelpBtn" title="Ayuda">?</button>
+        <button class="corner-btn btn-left casinoStoreBtn" title="Tienda de Fondos">$</button>
+        <button class="corner-btn btn-right casinoHelpBtn" title="Ayuda">?</button>
         
         <h2>🃏 Mesa de Blackjack</h2>
         <div class="coins-display">Saldo: <span class="coin-display">0</span> 🪙</div>
@@ -355,7 +387,7 @@
                 <div id="bjDealerCards" class="bj-cards"></div>
             </div>
             <div id="bjPlayerHandsContainer" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; width:100%;">
-                <!-- Manos del jugador se inyectan aquí -->
+                <!-- Manos del jugador -->
             </div>
             
             <div style="display:flex; gap:10px; justify-content:center; margin-top:10px; flex-wrap:wrap;">
@@ -374,14 +406,23 @@
          ========================================= -->
     <script>
         // --- 1. SISTEMA DE DATOS Y ANTI-CHEAT ---
-        const APP_VERSION = "v7.3"; 
+        const APP_VERSION = "v8.1"; 
         const STORAGE_KEY = "cuentaAtras_estado"; 
         const defaultUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.kym-cdn.com%2Fphotos%2Fimages%2Foriginal%2F003%2F136%2F289%2F782.jpg&f=1&nofb=1&ipt=e251919d7b84b303d27ec7336b0e609f7e6d6f02728fca0a66319ca9a4c37c25";
+
+        const bgData = {
+            'default': { name: 'Clásico', url: '' },
+            'eta': { name: 'ETA', url: 'https://media.cnn.com/api/v1/images/stellar/prod/cnne-397053-eta-announce-cessation-of-armed-conflict.jpg?c=16x9&q=h_833,w_1480,c_fill' },
+            'imperio': { name: 'Imperio', url: 'https://e01-phantom-elmundo.uecdn.es/988efe188f45bd45da6cd1997682c3a3/crop/0x0/1200x800/resize/828/f/jpg/assets/multimedia/imagenes/2024/02/15/17079962629188.png' },
+            'matrix': { name: 'Matrix', url: 'https://cdn.wallpapersafari.com/21/90/xY9urp.jpg' },
+            'goats': { name: 'Goats', url: 'https://www.marketingregistrado.com/img/noticias/pnco4jfsvvf2vh5iwb4xgjlnbe.jpg' }
+        };
 
         let appState = {
             version: APP_VERSION, offsetSecs: 0, customMessage: "¡El tiempo ha terminado! 🎉",
             customUrl: defaultUrl, imagesEnabled: false, activeGame: 'none', coins: 0,
-            signature: "" // Firma criptográfica anti-tamper
+            ownedBgs: ['default'], activeBg: 'default',
+            signature: "" 
         };
         
         let countdownInterval = null; let animationFrame = null; let flashTimeout = null; let respawnTimeout = null;
@@ -395,20 +436,62 @@
         let currentChipValue = 1;
         document.querySelectorAll('.s-chip').forEach(chip => {
             chip.addEventListener('click', function() {
-                const val = this.getAttribute('data-val');
-                currentChipValue = parseInt(val);
+                currentChipValue = parseInt(this.getAttribute('data-val'));
                 document.querySelectorAll('.s-chip').forEach(c => c.classList.remove('active'));
-                document.querySelectorAll(`.s-chip[data-val="${val}"]`).forEach(c => c.classList.add('active'));
+                document.querySelectorAll(`.s-chip[data-val="${currentChipValue}"]`).forEach(c => c.classList.add('active'));
             });
         });
 
-        // --- 2. MOTOR DE ALMACENAMIENTO Y ANTI-CHEAT ---
+        // --- 2. MOTOR DE ALMACENAMIENTO, ANTI-CHEAT Y FONDOS ---
         function showToast(msg, isDanger = false) {
             const toast = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
             if (isDanger) toast.classList.add('danger'); else toast.classList.remove('danger');
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 6000);
+            setTimeout(() => toast.classList.remove('show'), 5000);
+        }
+
+        // Genera la firma de seguridad (SALT ÚNICO DE LA V8)
+        function generateSignature(coins) {
+            return btoa("casino_secure_" + coins + "_salt_v8");
+        }
+
+        // COMPROBADOR DE SEGURIDAD (Se ejecuta ANTES de cualquier transacción)
+        function checkSignature() {
+            if (appState.signature && appState.signature !== generateSignature(appState.coins)) {
+                appState.coins = 0;
+                appState.signature = generateSignature(0);
+                saveState(); updateCoinDisplay();
+                showToast("🚨 ANTI-CHEAT: Manipulación detectada. Fondos confiscados.", true);
+                return false;
+            }
+            return true;
+        }
+
+        // FUNCIÓN MAESTRA DE ECONOMÍA
+        function modificarMonedas(amount) {
+            if (!checkSignature()) return false; 
+
+            if (amount < 0 && appState.coins + amount < 0) {
+                showToast("🪙 Monedas insuficientes.", true);
+                return false;
+            }
+            
+            appState.coins += amount;
+            appState.signature = generateSignature(appState.coins);
+            updateCoinDisplay();
+            saveState();
+            return true;
+        }
+
+        function applyBackground() {
+            const bg = bgData[appState.activeBg];
+            if (bg && bg.url !== '') {
+                document.body.style.background = `url('${bg.url}') no-repeat center center fixed`;
+                document.body.style.backgroundSize = 'cover';
+            } else {
+                document.body.style.background = 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)';
+            }
         }
 
         function updateToggleBtn(btn, state) {
@@ -429,12 +512,9 @@
             document.getElementById('rouletteContainer').style.display = (appState.activeGame === 'roulette') ? 'block' : 'none';
             document.getElementById('blackjackContainer').style.display = (appState.activeGame === 'blackjack') ? 'block' : 'none';
             
+            applyBackground();
             updateCoinDisplay();
-        }
-
-        // Genera un Hash simple pero efectivo para evitar edición manual de LocalStorage
-        function generateSignature(coins) {
-            return btoa("cuenta_atras_secure_" + coins + "_salt_x9");
+            renderStore();
         }
 
         function loadState() {
@@ -443,37 +523,83 @@
                 try {
                     const parsedData = JSON.parse(storedData);
                     
-                    // 🚨 SISTEMA ANTI-CHEAT: Limpieza de Hackers 🚨
-                    if (parsedData.coins > 1000) {
-                        parsedData.coins = 0;
-                        setTimeout(() => showToast("🚨 BANHAMMER: Se detectaron fondos anómalos. Tus monedas han sido confiscadas a 0.", true), 1500);
-                    } 
-                    // 🚨 SISTEMA ANTI-CHEAT: Validación de Firma 🚨
-                    else if (parsedData.signature && parsedData.signature !== generateSignature(parsedData.coins)) {
-                        parsedData.coins = 0;
-                        setTimeout(() => showToast("🚨 ANTI-CHEAT: Se detectó manipulación ilegal de datos. Tus monedas han sido puestas a 0.", true), 1500);
+                    if (parsedData.version !== APP_VERSION) {
+                        parsedData.signature = generateSignature(parsedData.coins); 
+                        if (!parsedData.ownedBgs) parsedData.ownedBgs = ['default'];
+                        if (!parsedData.activeBg) parsedData.activeBg = 'default';
+                        showToast(`✨ Actualizado a ${APP_VERSION}: Botón de tienda reubicado en las mesas de casino. 🛒`);
+                    } else if (parsedData.signature && parsedData.signature !== generateSignature(parsedData.coins)) {
+                        parsedData.coins = 0; parsedData.signature = generateSignature(0);
+                        setTimeout(() => showToast("🚨 ANTI-CHEAT: Manipulación de fondos detectada.", true), 1500);
                     }
-                    // Si todo está legal, comprobamos versión normal
-                    else if (parsedData.version !== APP_VERSION) {
-                        showToast(`✨ Actualizado a ${APP_VERSION}: Implementados nuevos sistemas de seguridad Anti-Cheat.`);
-                    }
-                    
+
                     appState = { ...appState, ...parsedData, version: APP_VERSION };
-                } catch(e) { appState.coins = 0; } // Fallback seguro
+                } catch(e) { appState.coins = 0; appState.signature = generateSignature(0); }
+            } else {
+                appState.signature = generateSignature(appState.coins);
             }
             syncUI(); saveState(); 
         }
 
         function saveState() { 
-            // Generar la firma siempre que guardamos legítimamente en el código
-            appState.signature = generateSignature(appState.coins);
+            appState.signature = generateSignature(appState.coins); 
             localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); 
         }
-
-        function updateCoinDisplay() { document.querySelectorAll('.coin-display').forEach(el => el.innerText = appState.coins); saveState(); }
+        function updateCoinDisplay() { document.querySelectorAll('.coin-display').forEach(el => el.innerText = appState.coins); }
 
         loadState();
         document.getElementById('closeToastBtn').addEventListener('click', () => document.getElementById('toast').classList.remove('show'));
+
+        // ======================================================================
+        // 3. TIENDA DE FONDOS
+        // ======================================================================
+        const storeModal = document.getElementById('storeModal');
+        
+        document.querySelectorAll('.casinoStoreBtn').forEach(btn => {
+            btn.addEventListener('click', () => { storeModal.style.display = 'flex'; renderStore(); });
+        });
+        
+        document.getElementById('closeStoreBtn').addEventListener('click', () => storeModal.style.display = 'none');
+
+        function renderStore() {
+            const grid = document.getElementById('bgStoreGrid');
+            grid.innerHTML = '';
+            Object.keys(bgData).forEach(key => {
+                const bg = bgData[key];
+                const isOwned = appState.ownedBgs.includes(key);
+                const isEquipped = appState.activeBg === key;
+                
+                let btnHTML = '';
+                if (isEquipped) btnHTML = `<button class="c-btn" style="background:#747d8c; width:100%;" disabled>Equipado</button>`;
+                else if (isOwned) btnHTML = `<button class="c-btn equip-bg-btn" data-id="${key}" style="background:#3498db; width:100%;">Equipar</button>`;
+                else btnHTML = `<button class="c-btn buy-bg-btn" data-id="${key}" style="background:#2ed573; width:100%;">Comprar 100🪙</button>`;
+
+                const previewStyle = bg.url ? `background: url('${bg.url}')` : `background: linear-gradient(135deg, #1e3c72, #2a5298)`;
+
+                grid.innerHTML += `
+                    <div class="store-item">
+                        <div class="store-preview" style="${previewStyle}"></div>
+                        <h3 style="margin: 0 0 10px 0; font-size:1rem;">${bg.name}</h3>
+                        ${btnHTML}
+                    </div>
+                `;
+            });
+
+            // Listener de Compra (Se activa el comprobador de Anti-Cheat)
+            document.querySelectorAll('.buy-bg-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                const id = e.target.getAttribute('data-id');
+                if (modificarMonedas(-100)) {
+                    appState.ownedBgs.push(id); appState.activeBg = id;
+                    saveState(); applyBackground(); renderStore();
+                    showToast(`✨ Fondo '${bgData[id].name}' adquirido y equipado.`);
+                }
+            }));
+
+            document.querySelectorAll('.equip-bg-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                appState.activeBg = e.target.getAttribute('data-id');
+                saveState(); applyBackground(); renderStore();
+            }));
+        }
 
         // Modales y Pestañas
         const settingsModal = document.getElementById('settingsModal');
@@ -487,12 +613,10 @@
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                btn.classList.add('active');
-                document.getElementById(btn.dataset.target).classList.add('active');
+                btn.classList.add('active'); document.getElementById(btn.dataset.target).classList.add('active');
             });
         });
 
-        // Eventos de Ajustes
         document.getElementById('offsetInput').addEventListener('input', (e) => { appState.offsetSecs = parseInt(e.target.value) || 0; saveState(); });
         document.getElementById('customMessageInput').addEventListener('input', (e) => { appState.customMessage = e.target.value; saveState(); });
         document.getElementById('customUrlInput').addEventListener('input', (e) => {
@@ -504,7 +628,6 @@
             if (appState.imagesEnabled && isRunning) spawnImages(); else hideImages();
         });
 
-        // Selectores Exclusivos de Casino
         document.getElementById('toggleRouletteBtn').addEventListener('click', () => {
             appState.activeGame = appState.activeGame === 'roulette' ? 'none' : 'roulette';
             saveState(); syncUI(); updateCollisionCache();
@@ -515,7 +638,7 @@
         });
 
         // ======================================================================
-        // 3. JUEGO: RULETA
+        // 4. JUEGO: RULETA
         // ======================================================================
         const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
         const mainGrid = document.getElementById('mainNumbersGrid');
@@ -542,11 +665,11 @@
             cell.addEventListener('click', function() {
                 if(isSpinning) return; 
                 const betType = this.getAttribute('data-bet');
-                if (appState.coins >= currentChipValue) {
-                    appState.coins -= currentChipValue;
+                // Intentamos cobrar la ficha
+                if (modificarMonedas(-currentChipValue)) {
                     currentBets[betType] = (currentBets[betType] || 0) + currentChipValue;
-                    updateCoinDisplay(); renderRouletteChips();
-                } else { showToast("Monedas insuficientes para esta ficha 🪙"); }
+                    renderRouletteChips();
+                }
             });
         });
 
@@ -554,11 +677,12 @@
         clearBetsBtn.addEventListener('click', () => {
             if(isSpinning) return;
             let refunded = 0; for (let amt of Object.values(currentBets)) refunded += amt;
-            appState.coins += refunded; currentBets = {}; updateCoinDisplay(); renderRouletteChips();
+            if (refunded > 0) modificarMonedas(refunded); 
+            currentBets = {}; renderRouletteChips();
         });
 
         spinBtn.addEventListener('click', () => {
-            if(isSpinning) return; 
+            if(isSpinning || !checkSignature()) return; // Anti-cheat check 
             const totalBets = Object.values(currentBets).reduce((a, b) => a + b, 0);
             if(totalBets === 0) { showToast("¡Coloca fichas en el tapete!"); return; }
 
@@ -567,7 +691,7 @@
             const spinNumDisp = document.getElementById('spinNumberDisplay');
             const spinTextDisp = document.getElementById('spinTextDisplay');
             
-            overlay.style.display = 'flex'; spinTextDisp.innerText = "Girando la ruleta..."; spinTextDisp.style.color = "#fbc531";
+            overlay.style.display = 'flex'; spinTextDisp.innerText = "Girando..."; spinTextDisp.style.color = "#fbc531";
 
             let spinInterval = setInterval(() => { spinNumDisp.innerText = Math.floor(Math.random() * 37); }, 50);
 
@@ -591,10 +715,11 @@
                 }
 
                 if(totalWon > 0) {
-                    spinTextDisp.innerText = `¡GANASTE ${totalWon} 🪙!`; spinTextDisp.style.color = "#4cd137"; appState.coins += totalWon;
+                    spinTextDisp.innerText = `¡GANASTE ${totalWon} 🪙!`; spinTextDisp.style.color = "#4cd137"; 
+                    modificarMonedas(totalWon);
                 } else { spinTextDisp.innerText = "Perdiste las fichas 💀"; spinTextDisp.style.color = "#ff4757"; }
 
-                updateCoinDisplay(); currentBets = {}; renderRouletteChips();
+                currentBets = {}; renderRouletteChips();
                 setTimeout(() => {
                     overlay.style.display = 'none'; spinNumDisp.style.color = "white"; 
                     isSpinning = false; spinBtn.disabled = false; clearBetsBtn.disabled = false;
@@ -603,7 +728,7 @@
         });
 
         // ======================================================================
-        // 4. JUEGO: BLACKJACK
+        // 5. JUEGO: BLACKJACK
         // ======================================================================
         let bjDeck = []; let bjHands = []; let bjBets = []; let bjDealerHand = [];
         let bjActiveHandIdx = 0; let bjCurrentBet = 0; let bjState = 'betting'; 
@@ -624,9 +749,7 @@
                 const j = Math.floor(Math.random() * (i + 1)); [bjDeck[i], bjDeck[j]] = [bjDeck[j], bjDeck[i]];
             }
         }
-
         function getBjCardVal(c) { if(['J','Q','K'].includes(c.v)) return 10; if(c.v === 'A') return 11; return parseInt(c.v); }
-
         function getBjScore(hand) {
             let score = 0; let aces = 0;
             hand.forEach(c => { score += getBjCardVal(c); if(c.v === 'A') aces++; });
@@ -646,55 +769,43 @@
         }
 
         function renderBjState(hideDealerCard) {
-            // Dealer
             const dealerScoreEl = document.getElementById('bjDealerScoreText');
             if(hideDealerCard) { dealerScoreEl.innerText = "?"; renderBjHandCards(bjDealerHand, 'bjDealerCards', true); } 
             else { dealerScoreEl.innerText = getBjScore(bjDealerHand); renderBjHandCards(bjDealerHand, 'bjDealerCards', false); }
             
-            // Player Hands
             const container = document.getElementById('bjPlayerHandsContainer'); container.innerHTML = '';
-            
             for(let i=0; i<bjHands.length; i++) {
-                let score = getBjScore(bjHands[i]);
-                let isActive = (bjState === 'playing' && i === bjActiveHandIdx);
-                let borderStyle = isActive ? 'border: 2px solid #2ed573; box-shadow: 0 0 10px #2ed573;' : 'border: 2px solid transparent; opacity:0.8;';
+                let score = getBjScore(bjHands[i]); let isActive = (bjState === 'playing' && i === bjActiveHandIdx);
+                let borderStyle = isActive ? 'border: 2px solid #2ed573; box-shadow: 0 0 10px #2ed573;' : 'border: 1px solid rgba(255,255,255,0.1); opacity:0.8;';
                 
-                let handDiv = document.createElement('div');
-                handDiv.className = 'bj-hand'; handDiv.style.cssText = borderStyle;
-                
+                let handDiv = document.createElement('div'); handDiv.className = 'bj-hand'; handDiv.style.cssText = borderStyle;
                 let title = bjHands.length > 1 ? `Mano ${i+1} (${bjBets[i]}🪙)` : `Tu Mano`;
                 handDiv.innerHTML = `<p>${title}: <span style="font-weight:bold;">${score}</span></p><div id="bjPlayerHand${i}" class="bj-cards"></div>`;
-                container.appendChild(handDiv);
-                
-                renderBjHandCards(bjHands[i], `bjPlayerHand${i}`, false);
+                container.appendChild(handDiv); renderBjHandCards(bjHands[i], `bjPlayerHand${i}`, false);
             }
             
-            // Buttons logic
             if(bjState === 'playing') {
                 btnHit.style.display = 'block'; btnStand.style.display = 'block';
-                let canDouble = bjHands[bjActiveHandIdx].length === 2 && appState.coins >= bjBets[bjActiveHandIdx];
+                // Check if user has enough coins to double
+                let canDouble = bjHands[bjActiveHandIdx].length === 2 && appState.coins >= bjBets[bjActiveHandIdx] && checkSignature();
                 btnDouble.style.display = canDouble ? 'block' : 'none';
                 
-                let canSplit = bjHands.length === 1 && bjHands[0].length === 2 && getBjCardVal(bjHands[0][0]) === getBjCardVal(bjHands[0][1]) && appState.coins >= bjBets[0];
+                let canSplit = bjHands.length === 1 && bjHands[0].length === 2 && getBjCardVal(bjHands[0][0]) === getBjCardVal(bjHands[0][1]) && appState.coins >= bjBets[0] && checkSignature();
                 btnSplit.style.display = canSplit ? 'block' : 'none';
-            } else {
-                btnHit.style.display = 'none'; btnStand.style.display = 'none'; btnDouble.style.display = 'none'; btnSplit.style.display = 'none';
-            }
+            } else { btnHit.style.display = 'none'; btnStand.style.display = 'none'; btnDouble.style.display = 'none'; btnSplit.style.display = 'none'; }
         }
 
         function advanceBjHand() {
             bjActiveHandIdx++;
             if (bjActiveHandIdx >= bjHands.length) {
-                let allBusted = bjHands.every(h => getBjScore(h) > 21);
-                if (allBusted) finishBjResolution(); else dealerTurn();
+                if (bjHands.every(h => getBjScore(h) > 21)) finishBjResolution(); else dealerTurn();
             } else { renderBjState(true); }
         }
 
         function dealerTurn() {
             bjState = 'dealer'; renderBjState(false);
             function dealerAction() {
-                if(getBjScore(bjDealerHand) < 17) {
-                    bjDealerHand.push(bjDeck.pop()); renderBjState(false); setTimeout(dealerAction, 600);
+                if(getBjScore(bjDealerHand) < 17) { bjDealerHand.push(bjDeck.pop()); renderBjState(false); setTimeout(dealerAction, 600);
                 } else { finishBjResolution(); }
             }
             setTimeout(dealerAction, 600);
@@ -702,61 +813,55 @@
 
         function finishBjResolution() {
             bjState = 'resolved'; renderBjState(false);
-            let dScore = getBjScore(bjDealerHand);
-            let totalWon = 0; let resultMsgs = [];
+            let dScore = getBjScore(bjDealerHand); let totalWon = 0; let resultMsgs = [];
             
             for(let i=0; i<bjHands.length; i++) {
                 let pScore = getBjScore(bjHands[i]); let bet = bjBets[i];
                 let msg = bjHands.length > 1 ? `Mano ${i+1}: ` : "";
                 
                 if (pScore > 21) { msg += "Te pasaste. 💀"; } 
-                else if (dScore > 21) { msg += `Crupier se pasa. Ganaste ${bet*2}🪙!`; totalWon += bet*2; } 
+                else if (dScore > 21) { msg += `Ganaste ${bet*2}🪙!`; totalWon += bet*2; } 
                 else if (pScore > dScore) { msg += `Ganaste ${bet*2}🪙!`; totalWon += bet*2; } 
                 else if (pScore < dScore) { msg += "Gana el Crupier 💀"; } 
-                else { msg += `Empate. Recuperas ${bet}🪙`; totalWon += bet; }
+                else { msg += `Empate.`; totalWon += bet; }
                 
                 resultMsgs.push(`<span style="color:${(pScore<=21 && (dScore>21 || pScore>dScore)) ? '#4cd137' : (pScore>21 || pScore<dScore ? '#ff4757' : '#fbc531')}">${msg}</span>`);
             }
             
-            if(totalWon > 0) { appState.coins += totalWon; updateCoinDisplay(); }
+            if(totalWon > 0) modificarMonedas(totalWon);
             
             uiBjRes.innerHTML = resultMsgs.join("<br>");
             btnNewGame.style.display = 'block'; bjCurrentBet = 0; uiBjBetDisp.innerText = bjCurrentBet; 
         }
 
-        // Apuestas Blackjack
         document.getElementById('bjBettingPhase').addEventListener('click', (e) => {
             if(bjState !== 'betting') return;
             if (e.target.classList.contains('s-chip')) {
-                if (appState.coins >= currentChipValue) {
-                    appState.coins -= currentChipValue; bjCurrentBet += currentChipValue;
-                    updateCoinDisplay(); uiBjBetDisp.innerText = bjCurrentBet;
-                } else { showToast("Monedas insuficientes 🪙"); }
+                if (modificarMonedas(-currentChipValue)) {
+                    bjCurrentBet += currentChipValue; uiBjBetDisp.innerText = bjCurrentBet;
+                }
             }
         });
 
         document.getElementById('bjClearBetBtn').addEventListener('click', () => {
             if(bjState !== 'betting') return;
-            appState.coins += bjCurrentBet; bjCurrentBet = 0;
-            updateCoinDisplay(); uiBjBetDisp.innerText = bjCurrentBet;
+            if (bjCurrentBet > 0) modificarMonedas(bjCurrentBet); 
+            bjCurrentBet = 0; uiBjBetDisp.innerText = bjCurrentBet;
         });
 
         document.getElementById('bjDealBtn').addEventListener('click', () => {
-            if(bjCurrentBet === 0) { showToast("Pon alguna ficha primero."); return; }
+            if (!checkSignature()) return;
+            if (bjCurrentBet === 0) { showToast("Pon alguna ficha primero."); return; }
             bjState = 'playing'; uiBjBetArea.style.display = 'none'; uiBjGameArea.style.display = 'flex';
             uiBjRes.innerHTML = ""; btnNewGame.style.display = 'none';
 
-            buildBjDeck();
-            bjHands = [ [bjDeck.pop(), bjDeck.pop()] ];
-            bjDealerHand = [bjDeck.pop(), bjDeck.pop()];
-            bjBets = [ bjCurrentBet ]; bjActiveHandIdx = 0;
-
-            renderBjState(true);
+            buildBjDeck(); bjHands = [ [bjDeck.pop(), bjDeck.pop()] ]; bjDealerHand = [bjDeck.pop(), bjDeck.pop()];
+            bjBets = [ bjCurrentBet ]; bjActiveHandIdx = 0; renderBjState(true);
 
             if(getBjScore(bjHands[0]) === 21) {
                 bjState = 'resolved'; renderBjState(false);
                 let win = Math.floor(bjBets[0] * 2.5); 
-                appState.coins += win; updateCoinDisplay();
+                modificarMonedas(win);
                 uiBjRes.innerHTML = `<span style="color:#4cd137">¡BLACKJACK! Ganaste ${win} 🪙</span>`;
                 btnHit.style.display = 'none'; btnStand.style.display = 'none'; btnDouble.style.display = 'none'; btnSplit.style.display = 'none';
                 btnNewGame.style.display = 'block'; bjCurrentBet = 0; uiBjBetDisp.innerText = bjCurrentBet;
@@ -764,41 +869,34 @@
         });
 
         btnHit.addEventListener('click', () => {
-            if(bjState !== 'playing') return;
-            bjHands[bjActiveHandIdx].push(bjDeck.pop());
-            renderBjState(true);
+            if(bjState !== 'playing' || !checkSignature()) return;
+            bjHands[bjActiveHandIdx].push(bjDeck.pop()); renderBjState(true);
             if(getBjScore(bjHands[bjActiveHandIdx]) > 21) advanceBjHand();
         });
 
         btnDouble.addEventListener('click', () => {
             if(bjState !== 'playing') return;
-            if(appState.coins < bjBets[bjActiveHandIdx]) { showToast("No tienes monedas para doblar."); return; }
-            
-            appState.coins -= bjBets[bjActiveHandIdx]; bjBets[bjActiveHandIdx] *= 2; updateCoinDisplay();
-            bjHands[bjActiveHandIdx].push(bjDeck.pop()); renderBjState(true);
-            advanceBjHand();
+            if(modificarMonedas(-bjBets[bjActiveHandIdx])) {
+                bjBets[bjActiveHandIdx] *= 2; 
+                bjHands[bjActiveHandIdx].push(bjDeck.pop()); renderBjState(true); advanceBjHand();
+            }
         });
 
         btnSplit.addEventListener('click', () => {
             if(bjState !== 'playing') return;
-            if(appState.coins < bjBets[0]) { showToast("No tienes monedas para dividir."); return; }
-            
-            appState.coins -= bjBets[0]; updateCoinDisplay();
-            bjBets.push(bjBets[0]); 
-            
-            let c1 = bjHands[0][0]; let c2 = bjHands[0][1];
-            bjHands = [ [c1, bjDeck.pop()], [c2, bjDeck.pop()] ];
-            renderBjState(true);
+            if(modificarMonedas(-bjBets[0])) {
+                bjBets.push(bjBets[0]); 
+                let c1 = bjHands[0][0]; let c2 = bjHands[0][1];
+                bjHands = [ [c1, bjDeck.pop()], [c2, bjDeck.pop()] ];
+                renderBjState(true);
+            }
         });
 
-        btnStand.addEventListener('click', () => { if(bjState === 'playing') advanceBjHand(); });
-
-        btnNewGame.addEventListener('click', () => {
-            bjState = 'betting'; uiBjBetArea.style.display = 'flex'; uiBjGameArea.style.display = 'none';
-        });
+        btnStand.addEventListener('click', () => { if(bjState === 'playing' && checkSignature()) advanceBjHand(); });
+        btnNewGame.addEventListener('click', () => { bjState = 'betting'; uiBjBetArea.style.display = 'flex'; uiBjGameArea.style.display = 'none'; });
 
         // ======================================================================
-        // 5. MOTOR DE FÍSICAS DE IMÁGENES Y RESIZE OBSERVER
+        // 6. MOTOR DE FÍSICAS DE IMÁGENES Y RESIZE OBSERVER
         // ======================================================================
         function getRandSpeed() { return (Math.random() * 4 + 3) * (Math.random() > 0.5 ? 1 : -1); }
         
@@ -863,8 +961,9 @@
             fb.style.display = 'block'; fb.style.animation = 'none'; fb.offsetHeight; fb.style.animation = 'flashAnim 5s forwards';
 
             if (appState.activeGame !== 'none') {
-                appState.coins += 1; updateCoinDisplay();
-                showToast("💥 ¡Imágenes chocadas! Has ganado +1 Moneda 🪙");
+                if (modificarMonedas(1)) {
+                    showToast("💥 ¡Imágenes chocadas! Has ganado +1 Moneda 🪙");
+                }
             }
 
             flashTimeout = setTimeout(() => { fb.style.display = 'none'; }, 5000);
@@ -886,7 +985,7 @@
         }
 
         // ======================================================================
-        // 6. LÓGICA DEL RELOJ PRINCIPAL
+        // 7. LÓGICA DEL RELOJ PRINCIPAL
         // ======================================================================
         function stopApp() {
             clearInterval(countdownInterval); cancelAnimationFrame(animationFrame);
@@ -931,7 +1030,10 @@
 
                 if (appState.activeGame !== 'none') {
                     activeSecondsCounter++;
-                    if (activeSecondsCounter >= 60) { activeSecondsCounter = 0; appState.coins++; updateCoinDisplay(); }
+                    if (activeSecondsCounter >= 60) { 
+                        activeSecondsCounter = 0; 
+                        modificarMonedas(1); 
+                    }
                 }
 
                 if (distance <= 0) {
