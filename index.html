@@ -25,7 +25,6 @@
             gap: 15px;
         }
 
-        /* --- NOTIFICACIÓN DE ACTUALIZACIÓN (TOAST) --- */
         #toast {
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -34,13 +33,10 @@
             z-index: 1000; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); font-weight: 500;
         }
         #toast.show { top: 20px; }
-        #toast button {
-            background: rgba(0,0,0,0.3); border: none; color: white; border-radius: 50%;
-            width: 25px; height: 25px; cursor: pointer; font-weight: bold;
-        }
+        #toast button { background: rgba(0,0,0,0.3); border: none; color: white; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
 
         /* =========================================
-           2. CONTENEDORES (Glassmorphism)
+           2. CONTENEDORES Y RELOJ PRINCIPAL
            ========================================= */
         .container {
             background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -50,15 +46,12 @@
         }
 
         h1 { margin-top: 0; font-size: 2rem; margin-bottom: 20px; font-weight: 700; }
-
-        /* --- Controles del reloj --- */
         .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        input[type="time"], input[type="number"], input[type="text"] {
+        input[type="time"], input[type="number"], input[type="text"], select {
             padding: 10px 15px; font-size: 1rem; font-family: inherit; border: none; border-radius: 10px;
-            outline: none; background: rgba(255, 255, 255, 0.9); color: #333;
+            outline: none; background: rgba(255, 255, 255, 0.9); color: #333; cursor: pointer;
         }
-        input[type="time"] { cursor: pointer; }
-
+        
         .main-btn {
             padding: 10px 20px; font-size: 1.1rem; font-family: inherit; font-weight: 500; border: none;
             border-radius: 10px; background-color: #ff4757; color: white; cursor: pointer; transition: all 0.3s ease;
@@ -67,7 +60,6 @@
         .main-btn:hover { background-color: #ff6b81; transform: translateY(-2px); }
         .main-btn.stop-btn { background-color: #747d8c; box-shadow: none; transform: none; }
 
-        /* --- Reloj --- */
         .countdown { display: none; justify-content: center; gap: 15px; }
         .time-box {
             display: flex; flex-direction: column; align-items: center; background: rgba(0, 0, 0, 0.25);
@@ -79,88 +71,99 @@
         #message { display: none; font-size: 1.5rem; font-weight: 700; color: #2ed573; margin-top: 15px; animation: pulse 1.5s infinite; }
 
         /* =========================================
-           3. MINI JUEGO DE RULETA (TAPETE HORIZONTAL)
+           3. SISTEMA DE FICHAS (CHIPS) GLOBALES
            ========================================= */
-        #rouletteContainer { padding: 15px 20px; display: none; }
-        #rouletteContainer h2 { font-size: 1.2rem; margin: 0 0 10px 0; }
+        .chip-selector { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
+        .s-chip {
+            width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.85rem; border: 2px dashed rgba(255,255,255,0.6); cursor: pointer;
+            transition: 0.2s; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .s-chip:hover { transform: scale(1.1); }
+        .s-chip.active { transform: scale(1.2); border: 2px solid white; box-shadow: 0 0 15px rgba(255,255,255,0.8); z-index: 5;}
+        
+        .ch-1 { background-color: #7f8c8d; }  /* Gris */
+        .ch-5 { background-color: #e74c3c; }  /* Rojo */
+        .ch-10 { background-color: #3498db; } /* Azul */
+        .ch-25 { background-color: #2ecc71; } /* Verde */
+        .ch-100 { background-color: #2c3e50; } /* Negro */
+        .ch-500 { background-color: #8e44ad; } /* Morado */
+
+        /* =========================================
+           4. JUEGOS DEL CASINO (RULETA Y BLACKJACK)
+           ========================================= */
+        .game-container { padding: 15px 20px; display: none; max-width: 550px; }
+        .game-container h2 { font-size: 1.2rem; margin: 0 0 10px 0; }
         .coins-display { font-size: 1.1rem; font-weight: bold; color: #ffd32a; margin-bottom: 10px; }
         
-        /* Contenedor principal del tapete sin scroll */
-        .r-wrapper {
-            display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; user-select: none; width: 100%;
+        .help-btn {
+            position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 50%; width: 28px; height: 28px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
+            display: flex; justify-content: center; align-items: center; font-family: inherit; z-index: 5;
         }
+        .help-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.1); }
 
-        /* Grid Superior (Cero + Números) */
+        .c-btn { padding: 10px 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: white; transition: 0.2s;}
+        .c-btn:disabled { background-color: #747d8c !important; cursor: not-allowed; opacity: 0.7;}
+
+        /* --- Ruleta Especifico --- */
+        .r-wrapper { display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; user-select: none; width: 100%; }
         .r-grid-main { display: grid; grid-template-columns: 35px repeat(12, 1fr); grid-template-rows: repeat(3, 30px); gap: 3px; }
-        
-        /* Grid Medio (Docenas) */
         .r-grid-dozens { display: grid; grid-template-columns: 35px repeat(3, 1fr); gap: 3px; height: 30px; }
-
-        /* Grid Inferior (Colores y Pares) */
         .r-grid-bottom { display: grid; grid-template-columns: 35px repeat(4, 1fr); gap: 3px; height: 30px; }
-        .r-spacer { visibility: hidden; } /* Hueco debajo del cero */
-
-        /* Estilo base de casillas */
+        .r-spacer { visibility: hidden; } 
+        
         .r-cell {
-            border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: pointer;
-            position: relative; border: 1px solid rgba(255,255,255,0.3); transition: 0.1s;
-            display: flex; align-items: center; justify-content: center; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: pointer; position: relative; 
+            border: 1px solid rgba(255,255,255,0.3); transition: 0.1s; display: flex; align-items: center; 
+            justify-content: center; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
         .r-cell:hover { opacity: 0.8; transform: scale(0.95); z-index: 5;}
         .r-zero { grid-row: 1 / span 3; grid-column: 1; }
-
-        /* Colores Tapete */
-        .c-red { background-color: #e84118; }
-        .c-black { background-color: #2f3640; }
-        .c-green { background-color: #4cd137; }
-        .c-blue { background-color: #0097e6; }
-        .c-dark { background-color: #353b48; }
-
-        /* Fichas visuales apiladas */
-        .chip {
+        .c-red { background-color: #e84118; } .c-black { background-color: #2f3640; } .c-green { background-color: #4cd137; }
+        .c-blue { background-color: #0097e6; } .c-dark { background-color: #353b48; }
+        
+        .board-chip {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #fbc531; color: black; border-radius: 50%; width: 16px; height: 16px;
-            font-size: 0.6rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
-            border: 2px dashed #e1b12c; pointer-events: none; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            background: #fbc531; color: black; border-radius: 50%; width: 18px; height: 18px;
+            font-size: 0.55rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
+            border: 1px solid #e1b12c; pointer-events: none; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
 
-        /* Botones de acción ruleta */
-        .roulette-actions { display: flex; gap: 10px; justify-content: center;}
-        .r-btn { padding: 10px 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: white; transition: 0.2s;}
-        #clearBetsBtn { background-color: #e84118; }
-        #clearBetsBtn:disabled { background-color: #a4b0be; cursor: not-allowed; }
-        #spinBtn { background-color: #2ed573; flex-grow: 1;}
-        #spinBtn:disabled { background-color: #747d8c; cursor: not-allowed; }
-
-        /* Overlay de Animación Girando */
         #rouletteSpinOverlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); border-radius: 20px;
-            display: none; flex-direction: column; justify-content: center; align-items: center;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85);
+            border-radius: 20px; display: none; flex-direction: column; justify-content: center; align-items: center;
             z-index: 20; backdrop-filter: blur(5px);
         }
         .spin-number { font-size: 5rem; font-weight: bold; margin-bottom: 5px; }
-        .spin-text { font-size: 1.1rem; color: #fbc531; animation: pulse 0.5s infinite; text-align: center; padding: 0 10px;}
+
+        /* --- Blackjack Especifico --- */
+        #bjBettingArea { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 10px;}
+        #bjGameArea { display: none; flex-direction: column; gap: 15px; }
+        
+        .bj-hand { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; min-height: 90px;}
+        .bj-hand p { margin: 0 0 5px 0; font-weight: bold; font-size: 0.9rem;}
+        .bj-cards { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;}
+        
+        .playing-card {
+            background: white; border-radius: 5px; width: 45px; height: 65px; display: flex;
+            align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;
+            color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 1px solid #ccc; position: relative;
+        }
+        .card-red { color: #e84118; }
+        .card-hidden { background: repeating-linear-gradient(45deg, #2980b9, #2980b9 5px, #3498db 5px, #3498db 10px); color: transparent; border: 1px solid white;}
 
         /* =========================================
-           4. MENÚ DE AJUSTES (MODAL)
+           5. MODALES (AJUSTES Y AYUDA)
            ========================================= */
         #settingsBtn {
             position: fixed; top: 20px; right: 20px; z-index: 10; background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 50%; width: 45px; height: 45px;
             font-size: 1.5rem; cursor: pointer; color: white; display: flex; justify-content: center; align-items: center;
         }
-        #settingsBtn:hover { background: rgba(255, 255, 255, 0.3); }
-
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); z-index: 100; justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 25px; border-radius: 20px; text-align: center; min-width: 320px; max-width: 90%;
-        }
-
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.3); padding: 25px; border-radius: 20px; text-align: center; min-width: 320px; max-width: 90%; }
+        
         .tabs { display: flex; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.3); margin-bottom: 15px; }
         .tab-btn { background: transparent; border: none; color: white; font-size: 1rem; padding: 10px 15px; cursor: pointer; opacity: 0.6; }
         .tab-btn.active { opacity: 1; border-bottom: 3px solid #2ed573; font-weight: bold; }
@@ -173,10 +176,11 @@
 
         .toggle-btn { background-color: #ff4757; padding: 10px 20px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; width: 100%; }
         .toggle-btn.on { background-color: #2ed573; }
-        #closeSettingsBtn { padding: 10px 25px; background: transparent; border: 1px solid white; color: white; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 5px; }
+        .close-modal-btn { padding: 10px 25px; background: transparent; border: 1px solid white; color: white; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; transition: 0.3s;}
+        .close-modal-btn:hover { background-color: white; color: #1e3c72; }
 
         /* =========================================
-           5. ANIMACIONES (IMÁGENES, EXPLOSIÓN)
+           6. ANIMACIONES (IMÁGENES, EXPLOSIÓN)
            ========================================= */
         .bouncing-image {
             display: none; position: absolute; width: 75px; height: 75px; object-fit: cover;
@@ -190,11 +194,8 @@
 </head>
 <body>
 
-    <!-- Notificación / Toast Inteligente -->
-    <div id="toast">
-        <span id="toastMsg"></span>
-        <button id="closeToastBtn">✖</button>
-    </div>
+    <!-- Notificación / Toast -->
+    <div id="toast"><span id="toastMsg"></span><button id="closeToastBtn">✖</button></div>
 
     <button id="settingsBtn" title="Ajustes">⚙️</button>
 
@@ -205,7 +206,7 @@
             <div class="tabs">
                 <button class="tab-btn active" data-target="tab-general">General</button>
                 <button class="tab-btn" data-target="tab-images">Imágenes</button>
-                <button class="tab-btn" data-target="tab-roulette">Ruleta</button>
+                <button class="tab-btn" data-target="tab-casino">Casino</button>
             </div>
 
             <div id="tab-general" class="tab-content active">
@@ -215,7 +216,7 @@
                 </div>
                 <div class="setting-group">
                     <label>Mensaje final personalizable</label>
-                    <input type="text" id="customMessageInput" value="¡El tiempo ha terminado! 🎉" style="width: 90%; text-align: center;">
+                    <input type="text" id="customMessageInput" style="width: 90%; text-align: center;">
                 </div>
             </div>
 
@@ -226,22 +227,39 @@
                 </div>
                 <div class="setting-group">
                     <label>Activar imágenes rebotantes</label>
-                    <p style="font-size: 0.8rem; margin-top:0;">(Si chocan ganas 1 moneda 🪙)</p>
                     <button id="toggleImagesBtn" class="toggle-btn">Imágenes: OFF</button>
                 </div>
             </div>
 
-            <div id="tab-roulette" class="tab-content">
+            <div id="tab-casino" class="tab-content">
                 <div class="setting-group">
-                    <label>Activar Minijuego de Ruleta</label>
-                    <p style="font-size: 0.8rem; margin-top:0;">(+1 moneda por cada minuto en marcha)</p>
-                    <button id="toggleRouletteBtn" class="toggle-btn">Ruleta: OFF</button>
+                    <label>Juego de Casino Activo</label>
+                    <p style="font-size: 0.8rem; margin-top:0;">(Solo puedes jugar a uno a la vez)</p>
+                    <select id="activeGameSelect" style="width: 100%; text-align:center;">
+                        <option value="none">❌ Ninguno (Desactivado)</option>
+                        <option value="roulette">🎰 Ruleta Europea</option>
+                        <option value="blackjack">🃏 Blackjack</option>
+                    </select>
                 </div>
             </div>
-            <button id="closeSettingsBtn">Cerrar Ajustes</button>
+            <button id="closeSettingsBtn" class="close-modal-btn">Cerrar Ajustes</button>
         </div>
     </div>
 
+    <!-- Modal de Ayuda (Casino) -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content" style="max-width: 380px;">
+            <h2 style="margin-bottom: 15px;">¿Cómo ganar monedas? 🪙</h2>
+            <div style="text-align: left; font-size: 0.95rem; opacity: 0.9; margin-bottom: 25px; line-height: 1.6;">
+                <p>⚠️ <b>Regla de Oro:</b><br>Solo recibirás monedas si el <b>cronómetro está en marcha Y tienes un juego del casino activado</b>.</p>
+                <p><b>⏱️ Tiempo Activo:</b><br>Recibirás +1 moneda automáticamente por cada minuto que pase.</p>
+                <p><b>💥 Choques Lucrativos:</b><br>Si también activas las <i>Imágenes Rebotantes</i>, ganarás +1 moneda extra cada vez que colisionen.</p>
+            </div>
+            <button id="closeHelpBtn" class="close-modal-btn" style="background-color: #2ed573; border: none;">¡Entendido!</button>
+        </div>
+    </div>
+
+    <!-- Imágenes Rebotantes -->
     <img id="img1" class="bouncing-image" alt="Imagen Normal">
     <img id="img2" class="bouncing-image" alt="Imagen Invertida">
     <div id="explosion">💥</div>
@@ -262,32 +280,37 @@
         <div id="message"></div>
     </div>
 
-    <!-- Interfaz de la Ruleta (Compacta y sin scroll) -->
-    <div class="container" id="rouletteContainer">
+    <!-- ================== JUEGO: RULETA ================== -->
+    <div class="container game-container" id="rouletteContainer">
+        <button class="help-btn casinoHelpBtn" title="Ayuda">?</button>
         
-        <!-- Overlay Animación Ruleta -->
         <div id="rouletteSpinOverlay">
             <div class="spin-number" id="spinNumberDisplay">0</div>
             <div class="spin-text" id="spinTextDisplay">Girando la ruleta...</div>
         </div>
 
         <h2>🎰 Tapete de Apuestas</h2>
-        <div class="coins-display">Saldo: <span id="coinDisplay">0</span> 🪙</div>
+        <div class="coins-display">Saldo: <span class="coin-display">0</span> 🪙</div>
         
-        <!-- Tablero Horizontal Completo -->
+        <!-- Fichas Globales para Ruleta -->
+        <div class="chip-selector" id="rChipSelector">
+            <div class="s-chip ch-1 active" data-val="1">1</div>
+            <div class="s-chip ch-5" data-val="5">5</div>
+            <div class="s-chip ch-10" data-val="10">10</div>
+            <div class="s-chip ch-25" data-val="25">25</div>
+            <div class="s-chip ch-100" data-val="100">100</div>
+            <div class="s-chip ch-500" data-val="500">500</div>
+        </div>
+
+        <!-- Tablero Horizontal -->
         <div class="r-wrapper">
-            <!-- Números 1-36 + 0 -->
-            <div class="r-grid-main" id="mainNumbersGrid">
-                <!-- Se rellena por JavaScript -->
-            </div>
-            <!-- Docenas -->
+            <div class="r-grid-main" id="mainNumbersGrid"></div>
             <div class="r-grid-dozens">
                 <div class="r-spacer"></div>
                 <div class="r-cell c-blue" data-bet="1st12">1ª Doc.</div>
                 <div class="r-cell c-blue" data-bet="2nd12">2ª Doc.</div>
                 <div class="r-cell c-blue" data-bet="3rd12">3ª Doc.</div>
             </div>
-            <!-- Colores y Pares -->
             <div class="r-grid-bottom">
                 <div class="r-spacer"></div>
                 <div class="r-cell c-dark" data-bet="even">Par</div>
@@ -297,9 +320,55 @@
             </div>
         </div>
 
-        <div class="roulette-actions">
-            <button id="clearBetsBtn" class="r-btn">Limpiar Tapete</button>
-            <button id="spinBtn" class="r-btn">Girar Ruleta</button>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button id="clearBetsBtn" class="c-btn" style="background-color: #e84118;">Limpiar Tapete</button>
+            <button id="spinBtn" class="c-btn" style="background-color: #2ed573; flex-grow:1;">Girar Ruleta</button>
+        </div>
+    </div>
+
+    <!-- ================== JUEGO: BLACKJACK ================== -->
+    <div class="container game-container" id="blackjackContainer">
+        <button class="help-btn casinoHelpBtn" title="Ayuda">?</button>
+        
+        <h2>🃏 Mesa de Blackjack</h2>
+        <div class="coins-display">Saldo: <span class="coin-display">0</span> 🪙</div>
+        
+        <div id="bjBettingPhase">
+            <!-- Fichas Globales para BJ -->
+            <div class="chip-selector" id="bjChipSelector">
+                <div class="s-chip ch-1 active" data-val="1">1</div>
+                <div class="s-chip ch-5" data-val="5">5</div>
+                <div class="s-chip ch-10" data-val="10">10</div>
+                <div class="s-chip ch-25" data-val="25">25</div>
+                <div class="s-chip ch-100" data-val="100">100</div>
+                <div class="s-chip ch-500" data-val="500">500</div>
+            </div>
+            
+            <div id="bjBettingArea">
+                <div style="font-size:1.1rem; margin-bottom: 10px;">Apuesta actual: <b><span id="bjCurrentBetDisplay">0</span> 🪙</b></div>
+                <div style="display:flex; gap:10px; justify-content:center;">
+                    <button id="bjClearBetBtn" class="c-btn" style="background:#e84118;">Limpiar</button>
+                    <button id="bjDealBtn" class="c-btn" style="background:#2ed573; flex-grow:1;">Repartir Cartas</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="bjGameArea">
+            <div class="bj-hand">
+                <p>Crupier: <span id="bjDealerScoreText">?</span></p>
+                <div id="bjDealerCards" class="bj-cards"></div>
+            </div>
+            <div class="bj-hand">
+                <p>Tu Mano: <span id="bjPlayerScoreText">0</span></p>
+                <div id="bjPlayerCards" class="bj-cards"></div>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+                <button id="bjHitBtn" class="c-btn" style="background:#3498db;">Pedir</button>
+                <button id="bjStandBtn" class="c-btn" style="background:#e67e22;">Plantarse</button>
+                <button id="bjDoubleBtn" class="c-btn" style="background:#9b59b6;">Doblar</button>
+            </div>
+            <div id="bjResult" style="margin-top:15px; font-weight:bold; font-size:1.2rem;"></div>
+            <button id="bjNewGameBtn" class="c-btn" style="background:#2ed573; width:100%; margin-top:10px; display:none;">Nueva Partida</button>
         </div>
     </div>
 
@@ -307,107 +376,122 @@
          JAVASCRIPT LÓGICO Y MOTOR DE DATOS
          ========================================= -->
     <script>
-        // --- 1. SISTEMA DE DATOS CENTRALIZADO (JSON) ---
-        const APP_VERSION = "v6.0"; // Versión para el Toast de Novedades y control de caché
-        const STORAGE_KEY = "cuentaAtras_estado"; // Única clave para TODO el LocalStorage
+        // --- 1. SISTEMA DE DATOS Y VERSIONES ---
+        const APP_VERSION = "v7.1"; 
+        const STORAGE_KEY = "cuentaAtras_estado"; 
         const defaultUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.kym-cdn.com%2Fphotos%2Fimages%2Foriginal%2F003%2F136%2F289%2F782.jpg&f=1&nofb=1&ipt=e251919d7b84b303d27ec7336b0e609f7e6d6f02728fca0a66319ca9a4c37c25";
 
-        // Plantilla por defecto de nuestra "Base de datos" local
         let appState = {
             version: APP_VERSION,
             offsetSecs: 0,
             customMessage: "¡El tiempo ha terminado! 🎉",
             customUrl: defaultUrl,
             imagesEnabled: false,
-            rouletteEnabled: false,
+            activeGame: 'none', // 'none', 'roulette', 'blackjack'
             coins: 10
         };
         
-        // Variables de Motor
-        let countdownInterval = null;
-        let animationFrame = null;
-        let flashTimeout = null;
-        let respawnTimeout = null;
-        let isRunning = false;
-        let targetDate = null; 
+        let countdownInterval = null; let animationFrame = null;
+        let flashTimeout = null; let respawnTimeout = null;
+        let isRunning = false; let targetDate = null; 
         
-        let imagesAlive = false;
-        let activeSecondsCounter = 0; 
-        let currentBets = {}; 
-        let isSpinning = false; 
-
+        let imagesAlive = false; let activeSecondsCounter = 0; 
+        
         // Cajas Físicas
         let containerRect = null; 
-        let rouletteRect = null;
+        let activeGameRect = null;
         const objImg1 = { el: document.getElementById('img1'), x: 0, y: 0, vx: 0, vy: 0, w: 75, h: 75 };
         const objImg2 = { el: document.getElementById('img2'), x: 0, y: 0, vx: 0, vy: 0, w: 75, h: 75 };
         
-        // --- 2. MOTOR DE ALMACENAMIENTO ESCALABLE ---
+        // --- 2. SISTEMA DE FICHAS COMPARTIDO ---
+        let currentChipValue = 1;
+
+        document.querySelectorAll('.s-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                // Sincronizar selectores en ambos juegos
+                document.querySelectorAll('.s-chip').forEach(c => c.classList.remove('active'));
+                
+                const val = this.getAttribute('data-val');
+                currentChipValue = parseInt(val);
+                
+                // Activar visualmente la misma ficha en ambos tableros
+                document.querySelectorAll(`.s-chip[data-val="${val}"]`).forEach(c => c.classList.add('active'));
+            });
+        });
+
+        // --- 3. MOTOR DE ALMACENAMIENTO ---
         function showToast(msg) {
             document.getElementById('toastMsg').innerText = msg;
             document.getElementById('toast').classList.add('show');
             setTimeout(() => document.getElementById('toast').classList.remove('show'), 6000);
         }
 
-        function loadState() {
-            // Migración automática desde el sistema antiguo de variables sueltas (Versiones anteriores a la 6.0)
-            if (localStorage.getItem('appVersion') && !localStorage.getItem(STORAGE_KEY)) {
-                appState.coins = parseInt(localStorage.getItem('rouletteCoins')) || 10;
-                // Limpieza de basura antigua
-                ['appVersion', 'offsetSecs', 'customMessage', 'customUrl', 'imagesEnabled', 'rouletteEnabled', 'rouletteCoins'].forEach(k => localStorage.removeItem(k));
-                showToast("✨ Base de datos optimizada con éxito.");
-            }
+        function syncUI() {
+            document.getElementById('offsetInput').value = appState.offsetSecs;
+            document.getElementById('customMessageInput').value = appState.customMessage;
+            document.getElementById('customUrlInput').value = appState.customUrl;
+            objImg1.el.src = appState.customUrl; objImg2.el.src = appState.customUrl;
 
-            // Cargar el JSON del LocalStorage
+            // Toggle Imagenes
+            const btnImg = document.getElementById('toggleImagesBtn');
+            if(appState.imagesEnabled) { btnImg.innerText = `Imágenes: ON`; btnImg.classList.add('on'); btnImg.classList.remove('off'); } 
+            else { btnImg.innerText = `Imágenes: OFF`; btnImg.classList.add('off'); btnImg.classList.remove('on'); }
+
+            // Select Casino
+            document.getElementById('activeGameSelect').value = appState.activeGame;
+            
+            // Mostrar Juego Activo
+            document.getElementById('rouletteContainer').style.display = (appState.activeGame === 'roulette') ? 'block' : 'none';
+            document.getElementById('blackjackContainer').style.display = (appState.activeGame === 'blackjack') ? 'block' : 'none';
+            
+            updateCoinDisplay();
+        }
+
+        function loadState() {
             const storedData = localStorage.getItem(STORAGE_KEY);
             if (storedData) {
                 try {
                     const parsedData = JSON.parse(storedData);
                     
-                    // Comprobar si hay nueva versión para mostrar el aviso
+                    // Migrar vieja variable 'rouletteEnabled' al nuevo sistema 'activeGame'
+                    if (parsedData.rouletteEnabled === true && !parsedData.activeGame) parsedData.activeGame = 'roulette';
+                    else if (!parsedData.activeGame) parsedData.activeGame = 'none';
+
                     if (parsedData.version !== APP_VERSION) {
-                        showToast(`✨ Actualizado a ${APP_VERSION}: Sistema de guardado JSON optimizado para escalabilidad.`);
+                        showToast(`✨ Actualizado a ${APP_VERSION}: ¡Nuevas fichas de casino y juego de Blackjack añadidos! 🃏`);
                     }
-                    
-                    // Fusionar datos guardados con la plantilla por si hay campos nuevos
                     appState = { ...appState, ...parsedData, version: APP_VERSION };
-                } catch(e) {
-                    console.error("Error leyendo datos, se usarán los valores por defecto.", e);
-                }
+                } catch(e) { console.error("Error leyendo datos.", e); }
             } else {
-                // Primer inicio en la web
-                showToast(`✨ ¡Bienvenido a Cuenta Atrás! Explora los ajustes (⚙️) para ver las opciones.`);
+                showToast(`✨ ¡Bienvenido a Cuenta Atrás! Explora los ajustes (⚙️) para ver el Casino.`);
             }
-
-            // Aplicar el estado a la interfaz
-            document.getElementById('offsetInput').value = appState.offsetSecs;
-            document.getElementById('customMessageInput').value = appState.customMessage;
-            document.getElementById('customUrlInput').value = appState.customUrl;
-            objImg1.el.src = appState.customUrl; 
-            objImg2.el.src = appState.customUrl;
-
-            updateToggleBtn(document.getElementById('toggleImagesBtn'), appState.imagesEnabled, "Imágenes");
-            
-            updateToggleBtn(document.getElementById('toggleRouletteBtn'), appState.rouletteEnabled, "Ruleta");
-            document.getElementById('rouletteContainer').style.display = appState.rouletteEnabled ? 'block' : 'none';
-            
-            updateCoinDisplay();
-            saveState(); // Asegurar guardado inicial coherente
+            syncUI(); saveState(); 
         }
 
-        function saveState() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-        }
+        function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); }
 
-        function updateToggleBtn(btn, state, name) {
-            if(state) { btn.innerText = `${name}: ON`; btn.classList.add('on'); btn.classList.remove('off'); } 
-            else { btn.innerText = `${name}: OFF`; btn.classList.add('off'); btn.classList.remove('on'); }
+        function updateCoinDisplay() {
+            document.querySelectorAll('.coin-display').forEach(el => el.innerText = appState.coins);
+            saveState();
         }
 
         loadState();
         document.getElementById('closeToastBtn').addEventListener('click', () => document.getElementById('toast').classList.remove('show'));
 
-        // Control de Pestañas
+        // Modales
+        const settingsModal = document.getElementById('settingsModal');
+        const helpModal = document.getElementById('helpModal');
+        
+        document.getElementById('settingsBtn').addEventListener('click', () => settingsModal.style.display = 'flex');
+        document.getElementById('closeSettingsBtn').addEventListener('click', () => settingsModal.style.display = 'none');
+        document.getElementById('closeHelpBtn').addEventListener('click', () => helpModal.style.display = 'none');
+        
+        // Los dos botones de ayuda del casino abren el mismo modal
+        document.querySelectorAll('.casinoHelpBtn').forEach(btn => {
+            btn.addEventListener('click', () => helpModal.style.display = 'flex');
+        });
+
+        // Pestañas
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -417,46 +501,29 @@
             });
         });
 
-        // Eventos Modal y Guardado Automático
-        const settingsModal = document.getElementById('settingsModal');
-        document.getElementById('settingsBtn').addEventListener('click', () => settingsModal.style.display = 'flex');
-        document.getElementById('closeSettingsBtn').addEventListener('click', () => settingsModal.style.display = 'none');
-
-        document.getElementById('offsetInput').addEventListener('input', (e) => {
-            appState.offsetSecs = parseInt(e.target.value) || 0; saveState();
-        });
-        document.getElementById('customMessageInput').addEventListener('input', (e) => {
-            appState.customMessage = e.target.value; saveState();
-        });
+        // Guardado de Ajustes
+        document.getElementById('offsetInput').addEventListener('input', (e) => { appState.offsetSecs = parseInt(e.target.value) || 0; saveState(); });
+        document.getElementById('customMessageInput').addEventListener('input', (e) => { appState.customMessage = e.target.value; saveState(); });
         document.getElementById('customUrlInput').addEventListener('input', (e) => {
             appState.customUrl = e.target.value.trim() || defaultUrl;
-            objImg1.el.src = appState.customUrl; objImg2.el.src = appState.customUrl;
-            saveState();
+            objImg1.el.src = appState.customUrl; objImg2.el.src = appState.customUrl; saveState();
         });
 
-        document.getElementById('toggleImagesBtn').addEventListener('click', (e) => {
-            appState.imagesEnabled = !appState.imagesEnabled; saveState();
-            updateToggleBtn(e.target, appState.imagesEnabled, "Imágenes");
+        document.getElementById('toggleImagesBtn').addEventListener('click', () => {
+            appState.imagesEnabled = !appState.imagesEnabled; saveState(); syncUI();
             if (appState.imagesEnabled && isRunning) spawnImages(); else hideImages();
         });
 
-        document.getElementById('toggleRouletteBtn').addEventListener('click', (e) => {
-            appState.rouletteEnabled = !appState.rouletteEnabled; saveState();
-            updateToggleBtn(e.target, appState.rouletteEnabled, "Ruleta");
-            document.getElementById('rouletteContainer').style.display = appState.rouletteEnabled ? 'block' : 'none';
-            updateCollisionCache(); 
+        document.getElementById('activeGameSelect').addEventListener('change', (e) => {
+            appState.activeGame = e.target.value; saveState(); syncUI(); updateCollisionCache(); 
         });
 
-        // --- 3. RULETA: GENERACIÓN Y TAPETE HORIZONTAL ---
-        function updateCoinDisplay() {
-            document.getElementById('coinDisplay').innerText = appState.coins;
-            saveState();
-        }
-
+        // ======================================================================
+        // 4. JUEGO: RULETA (ACTUALIZADO A CHIPS)
+        // ======================================================================
         const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
         const mainGrid = document.getElementById('mainNumbersGrid');
         let numsHTML = `<div class="r-cell r-zero c-green" data-bet="0">0</div>`;
-        
         for(let i = 1; i <= 36; i++) {
             const col = Math.ceil(i/3) + 1; 
             let row = (i % 3 === 0) ? 1 : ((i % 3 === 2) ? 2 : 3); 
@@ -465,13 +532,15 @@
         }
         mainGrid.innerHTML = numsHTML;
 
-        // --- 4. SISTEMA DE APUESTAS SIMULTÁNEAS ---
-        function renderChips() {
-            document.querySelectorAll('.chip').forEach(el => el.remove()); 
+        let currentBets = {}; 
+        let isSpinning = false;
+
+        function renderRouletteChips() {
+            document.querySelectorAll('.board-chip').forEach(el => el.remove()); 
             for (const [betKey, amount] of Object.entries(currentBets)) {
                 if(amount > 0) {
-                    const cell = document.querySelector(`[data-bet="${betKey}"]`);
-                    if(cell) cell.innerHTML += `<div class="chip">${amount}</div>`;
+                    const cell = document.querySelector(`.r-cell[data-bet="${betKey}"]`);
+                    if(cell) cell.innerHTML += `<div class="board-chip">${amount}</div>`;
                 }
             }
         }
@@ -479,16 +548,12 @@
         document.querySelectorAll('.r-cell').forEach(cell => {
             cell.addEventListener('click', function() {
                 if(isSpinning) return; 
-                
                 const betType = this.getAttribute('data-bet');
-                if (appState.coins >= 1) {
-                    appState.coins--;
-                    currentBets[betType] = (currentBets[betType] || 0) + 1;
-                    updateCoinDisplay();
-                    renderChips();
-                } else {
-                    showToast("No te quedan monedas 🪙");
-                }
+                if (appState.coins >= currentChipValue) {
+                    appState.coins -= currentChipValue;
+                    currentBets[betType] = (currentBets[betType] || 0) + currentChipValue;
+                    updateCoinDisplay(); renderRouletteChips();
+                } else { showToast("Monedas insuficientes para esta ficha 🪙"); }
             });
         });
 
@@ -497,95 +562,243 @@
 
         clearBetsBtn.addEventListener('click', () => {
             if(isSpinning) return;
-            let refunded = 0;
-            for (let amt of Object.values(currentBets)) refunded += amt;
-            appState.coins += refunded;
-            currentBets = {};
-            updateCoinDisplay();
-            renderChips();
+            let refunded = 0; for (let amt of Object.values(currentBets)) refunded += amt;
+            appState.coins += refunded; currentBets = {}; updateCoinDisplay(); renderRouletteChips();
         });
 
         spinBtn.addEventListener('click', () => {
             if(isSpinning) return; 
-
             const totalBets = Object.values(currentBets).reduce((a, b) => a + b, 0);
-            if(totalBets === 0) { showToast("¡Coloca al menos una ficha en el tapete!"); return; }
+            if(totalBets === 0) { showToast("¡Coloca fichas en el tapete!"); return; }
 
-            isSpinning = true;
-            spinBtn.disabled = true;
-            clearBetsBtn.disabled = true;
-
-            const overlay = document.getElementById('rouletteSpinOverlay');
-            const spinNumberDisplay = document.getElementById('spinNumberDisplay');
-            const spinTextDisplay = document.getElementById('spinTextDisplay');
+            isSpinning = true; spinBtn.disabled = true; clearBetsBtn.disabled = true;
             
-            overlay.style.display = 'flex';
-            spinTextDisplay.innerText = "Girando la ruleta...";
-            spinTextDisplay.style.color = "#fbc531";
+            const overlay = document.getElementById('rouletteSpinOverlay');
+            const spinNumDisp = document.getElementById('spinNumberDisplay');
+            const spinTextDisp = document.getElementById('spinTextDisplay');
+            
+            overlay.style.display = 'flex'; spinTextDisp.innerText = "Girando la ruleta..."; spinTextDisp.style.color = "#fbc531";
 
-            let spinInterval = setInterval(() => { spinNumberDisplay.innerText = Math.floor(Math.random() * 37); }, 50);
+            let spinInterval = setInterval(() => { spinNumDisp.innerText = Math.floor(Math.random() * 37); }, 50);
 
             setTimeout(() => {
                 clearInterval(spinInterval);
-                const resultNumber = Math.floor(Math.random() * 37);
-                
+                const result = Math.floor(Math.random() * 37);
                 let resultColor = 'Verde';
-                if (resultNumber !== 0) resultColor = redNums.includes(resultNumber) ? 'Rojo' : 'Negro';
+                if (result !== 0) resultColor = redNums.includes(result) ? 'Rojo' : 'Negro';
                 
-                spinNumberDisplay.innerText = resultNumber;
-                spinNumberDisplay.style.color = resultColor === 'Rojo' ? '#ff4757' : (resultColor === 'Negro' ? '#747d8c' : '#4cd137');
+                spinNumDisp.innerText = result;
+                spinNumDisp.style.color = resultColor === 'Rojo' ? '#ff4757' : (resultColor === 'Negro' ? '#747d8c' : '#4cd137');
 
                 let totalWon = 0;
-                
                 for (const [betType, amount] of Object.entries(currentBets)) {
-                    if(!isNaN(betType) && parseInt(betType) === resultNumber) totalWon += amount * 36;
-                    else if(betType === '1st12' && resultNumber >= 1 && resultNumber <= 12) totalWon += amount * 3;
-                    else if(betType === '2nd12' && resultNumber >= 13 && resultNumber <= 24) totalWon += amount * 3;
-                    else if(betType === '3rd12' && resultNumber >= 25 && resultNumber <= 36) totalWon += amount * 3;
+                    if(!isNaN(betType) && parseInt(betType) === result) totalWon += amount * 36;
+                    else if(betType === '1st12' && result >= 1 && result <= 12) totalWon += amount * 3;
+                    else if(betType === '2nd12' && result >= 13 && result <= 24) totalWon += amount * 3;
+                    else if(betType === '3rd12' && result >= 25 && result <= 36) totalWon += amount * 3;
                     else if(betType === 'red' && resultColor === 'Rojo') totalWon += amount * 2;
                     else if(betType === 'black' && resultColor === 'Negro') totalWon += amount * 2;
-                    else if(betType === 'even' && resultNumber !== 0 && resultNumber % 2 === 0) totalWon += amount * 2;
-                    else if(betType === 'odd' && resultNumber !== 0 && resultNumber % 2 !== 0) totalWon += amount * 2;
+                    else if(betType === 'even' && result !== 0 && result % 2 === 0) totalWon += amount * 2;
+                    else if(betType === 'odd' && result !== 0 && result % 2 !== 0) totalWon += amount * 2;
                 }
 
                 if(totalWon > 0) {
-                    spinTextDisplay.innerText = `¡GANASTE ${totalWon} 🪙!`;
-                    spinTextDisplay.style.color = "#4cd137";
-                    appState.coins += totalWon;
+                    spinTextDisp.innerText = `¡GANASTE ${totalWon} 🪙!`; spinTextDisp.style.color = "#4cd137"; appState.coins += totalWon;
                 } else {
-                    spinTextDisplay.innerText = "Perdiste las fichas 💀";
-                    spinTextDisplay.style.color = "#ff4757";
+                    spinTextDisp.innerText = "Perdiste las fichas 💀"; spinTextDisp.style.color = "#ff4757";
                 }
 
-                updateCoinDisplay();
-                currentBets = {}; 
-                renderChips();
+                updateCoinDisplay(); currentBets = {}; renderRouletteChips();
 
                 setTimeout(() => {
-                    overlay.style.display = 'none';
-                    spinNumberDisplay.style.color = "white"; 
-                    isSpinning = false;
-                    spinBtn.disabled = false;
-                    clearBetsBtn.disabled = false;
+                    overlay.style.display = 'none'; spinNumDisp.style.color = "white"; 
+                    isSpinning = false; spinBtn.disabled = false; clearBetsBtn.disabled = false;
                 }, 2500);
 
             }, 2000);
         });
 
-        // --- 5. MOTOR DE FÍSICAS DE IMÁGENES ---
+        // ======================================================================
+        // 5. JUEGO: BLACKJACK
+        // ======================================================================
+        let bjDeck = []; let bjPlayerHand = []; let bjDealerHand = [];
+        let bjCurrentBet = 0; let bjState = 'betting'; // betting, playing, dealer, resolved
+
+        const uiBjBetArea = document.getElementById('bjBettingPhase');
+        const uiBjGameArea = document.getElementById('bjGameArea');
+        const uiBjBetDisp = document.getElementById('bjCurrentBetDisplay');
+        const uiBjRes = document.getElementById('bjResult');
+        const btnHit = document.getElementById('bjHitBtn');
+        const btnStand = document.getElementById('bjStandBtn');
+        const btnDouble = document.getElementById('bjDoubleBtn');
+        const btnNewGame = document.getElementById('bjNewGameBtn');
+
+        function buildBjDeck() {
+            const values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+            const suits = ['♠','♥','♣','♦'];
+            bjDeck = [];
+            for(let s of suits) { for(let v of values) { bjDeck.push({v, s}); } }
+            // Shuffle simple
+            for (let i = bjDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [bjDeck[i], bjDeck[j]] = [bjDeck[j], bjDeck[i]];
+            }
+        }
+
+        function getBjCardVal(c) {
+            if(['J','Q','K'].includes(c.v)) return 10;
+            if(c.v === 'A') return 11;
+            return parseInt(c.v);
+        }
+
+        function getBjScore(hand) {
+            let score = 0; let aces = 0;
+            hand.forEach(c => { score += getBjCardVal(c); if(c.v === 'A') aces++; });
+            while(score > 21 && aces > 0) { score -= 10; aces--; }
+            return score;
+        }
+
+        function renderBjHand(hand, elementId, hideSecondCard = false) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = '';
+            hand.forEach((c, idx) => {
+                if(hideSecondCard && idx === 1) {
+                    el.innerHTML += `<div class="playing-card card-hidden">?</div>`;
+                } else {
+                    const color = (c.s === '♥' || c.s === '♦') ? 'card-red' : '';
+                    el.innerHTML += `<div class="playing-card ${color}">${c.v}<br>${c.s}</div>`;
+                }
+            });
+        }
+
+        function renderBjState(hideDealerCard = false) {
+            const pScore = getBjScore(bjPlayerHand);
+            document.getElementById('bjPlayerScoreText').innerText = pScore;
+            renderBjHand(bjPlayerHand, 'bjPlayerCards', false);
+            
+            if(hideDealerCard) {
+                document.getElementById('bjDealerScoreText').innerText = "?";
+                renderBjHand(bjDealerHand, 'bjDealerCards', true);
+            } else {
+                document.getElementById('bjDealerScoreText').innerText = getBjScore(bjDealerHand);
+                renderBjHand(bjDealerHand, 'bjDealerCards', false);
+            }
+        }
+
+        function endBjGame(msg, color, payoutMultiplier) {
+            bjState = 'resolved';
+            renderBjState(false);
+            uiBjRes.innerText = msg; uiBjRes.style.color = color;
+            btnHit.style.display = 'none'; btnStand.style.display = 'none'; btnDouble.style.display = 'none';
+            btnNewGame.style.display = 'block';
+
+            if(payoutMultiplier > 0) {
+                appState.coins += Math.floor(bjCurrentBet * payoutMultiplier);
+                updateCoinDisplay();
+            }
+            bjCurrentBet = 0; uiBjBetDisp.innerText = bjCurrentBet;
+        }
+
+        // Apuestas Blackjack usando el Selector Global
+        document.getElementById('bjChipSelector').addEventListener('click', (e) => {
+            if(bjState !== 'betting') return;
+            if (e.target.classList.contains('s-chip')) {
+                if (appState.coins >= currentChipValue) {
+                    appState.coins -= currentChipValue;
+                    bjCurrentBet += currentChipValue;
+                    updateCoinDisplay(); uiBjBetDisp.innerText = bjCurrentBet;
+                } else { showToast("Monedas insuficientes 🪙"); }
+            }
+        });
+
+        document.getElementById('bjClearBetBtn').addEventListener('click', () => {
+            if(bjState !== 'betting') return;
+            appState.coins += bjCurrentBet; bjCurrentBet = 0;
+            updateCoinDisplay(); uiBjBetDisp.innerText = bjCurrentBet;
+        });
+
+        document.getElementById('bjDealBtn').addEventListener('click', () => {
+            if(bjCurrentBet === 0) { showToast("Pon alguna ficha primero."); return; }
+            bjState = 'playing'; uiBjBetArea.style.display = 'none'; uiBjGameArea.style.display = 'flex';
+            uiBjRes.innerText = "";
+            btnHit.style.display = 'block'; btnStand.style.display = 'block'; btnDouble.style.display = 'block';
+            btnNewGame.style.display = 'none';
+
+            buildBjDeck();
+            bjPlayerHand = [bjDeck.pop(), bjDeck.pop()];
+            bjDealerHand = [bjDeck.pop(), bjDeck.pop()];
+
+            renderBjState(true);
+
+            // Comprobar Blackjack Natural
+            if(getBjScore(bjPlayerHand) === 21) {
+                endBjGame(`¡BLACKJACK! Ganaste ${bjCurrentBet * 2.5} 🪙`, "#4cd137", 2.5); // Devuelve apuesta(1) + premio(1.5)
+            }
+        });
+
+        btnHit.addEventListener('click', () => {
+            if(bjState !== 'playing') return;
+            btnDouble.style.display = 'none'; // Solo puedes doblar en la primera acción
+            bjPlayerHand.push(bjDeck.pop());
+            renderBjState(true);
+            
+            if(getBjScore(bjPlayerHand) > 21) endBjGame("Te pasaste. Gana el Crupier 💀", "#ff4757", 0);
+        });
+
+        btnDouble.addEventListener('click', () => {
+            if(bjState !== 'playing') return;
+            if(appState.coins < bjCurrentBet) { showToast("No tienes monedas para doblar."); return; }
+            
+            appState.coins -= bjCurrentBet; bjCurrentBet *= 2; updateCoinDisplay();
+            bjPlayerHand.push(bjDeck.pop());
+            renderBjState(true);
+
+            if(getBjScore(bjPlayerHand) > 21) { endBjGame("Te pasaste. Gana el Crupier 💀", "#ff4757", 0); } 
+            else { dealerTurn(); }
+        });
+
+        btnStand.addEventListener('click', () => { if(bjState === 'playing') dealerTurn(); });
+
+        function dealerTurn() {
+            bjState = 'dealer'; renderBjState(false);
+            
+            const pScore = getBjScore(bjPlayerHand);
+            
+            function dealerAction() {
+                if(getBjScore(bjDealerHand) < 17) {
+                    bjDealerHand.push(bjDeck.pop()); renderBjState(false);
+                    setTimeout(dealerAction, 600);
+                } else { finishBjResolution(pScore, getBjScore(bjDealerHand)); }
+            }
+            setTimeout(dealerAction, 600);
+        }
+
+        function finishBjResolution(pScore, dScore) {
+            if(dScore > 21) endBjGame(`El Crupier se pasa. ¡Ganaste ${bjCurrentBet * 2} 🪙!`, "#4cd137", 2);
+            else if(dScore > pScore) endBjGame("Gana el Crupier 💀", "#ff4757", 0);
+            else if(dScore < pScore) endBjGame(`¡Ganaste ${bjCurrentBet * 2} 🪙!`, "#4cd137", 2);
+            else endBjGame(`Empate. Recuperas ${bjCurrentBet} 🪙`, "#fbc531", 1);
+        }
+
+        btnNewGame.addEventListener('click', () => {
+            bjState = 'betting'; uiBjBetArea.style.display = 'flex'; uiBjGameArea.style.display = 'none';
+        });
+
+        // ======================================================================
+        // 6. MOTOR DE FÍSICAS DE IMÁGENES
+        // ======================================================================
         function getRandSpeed() { return (Math.random() * 4 + 3) * (Math.random() > 0.5 ? 1 : -1); }
         
         function updateCollisionCache() { 
             containerRect = document.getElementById('mainContainer').getBoundingClientRect();
-            const rc = document.getElementById('rouletteContainer');
-            rouletteRect = rc.style.display === 'block' ? rc.getBoundingClientRect() : null;
+            // Buscar si hay algún juego activo visible para chocar con él
+            const actContainer = appState.activeGame === 'roulette' ? document.getElementById('rouletteContainer') : 
+                                (appState.activeGame === 'blackjack' ? document.getElementById('blackjackContainer') : null);
+            activeGameRect = actContainer ? actContainer.getBoundingClientRect() : null;
         }
         window.addEventListener('resize', updateCollisionCache);
 
-        function hideImages() {
-            imagesAlive = false; objImg1.el.style.display = 'none'; objImg2.el.style.display = 'none'; clearTimeout(respawnTimeout); 
-        }
-
+        function hideImages() { imagesAlive = false; objImg1.el.style.display = 'none'; objImg2.el.style.display = 'none'; clearTimeout(respawnTimeout); }
         function spawnImages() {
             imagesAlive = true; objImg1.el.style.display = 'block'; objImg2.el.style.display = 'block';
             objImg1.x = 0; objImg1.y = 0; objImg2.x = window.innerWidth - 75; objImg2.y = window.innerHeight - 75; 
@@ -617,7 +830,7 @@
             if (img.y + img.h >= maxH) { img.y = maxH - img.h; img.vy = -Math.abs(img.vy); }
 
             handleObstacleCollision(img, containerRect);
-            handleObstacleCollision(img, rouletteRect); 
+            handleObstacleCollision(img, activeGameRect); 
 
             img.el.style.left = img.x + 'px'; img.el.style.top = img.y + 'px';
         }
@@ -634,8 +847,11 @@
             const fb = document.getElementById('flashbang');
             fb.style.display = 'block'; fb.style.animation = 'none'; fb.offsetHeight; fb.style.animation = 'flashAnim 5s forwards';
 
-            appState.coins += 1; updateCoinDisplay();
-            showToast("💥 ¡Imágenes chocadas! Has ganado +1 Moneda 🪙");
+            // PREMIO CONDICIONADO AL CASINO
+            if (appState.activeGame !== 'none') {
+                appState.coins += 1; updateCoinDisplay();
+                showToast("💥 ¡Imágenes chocadas! Has ganado +1 Moneda 🪙");
+            }
 
             flashTimeout = setTimeout(() => { fb.style.display = 'none'; }, 5000);
             respawnTimeout = setTimeout(() => { if (isRunning && appState.imagesEnabled) spawnImages(); }, 30000); 
@@ -655,7 +871,9 @@
             animationFrame = requestAnimationFrame(gameLoop);
         }
 
-        // --- 6. LÓGICA DEL RELOJ PRINCIPAL ---
+        // ======================================================================
+        // 7. LÓGICA DEL RELOJ PRINCIPAL
+        // ======================================================================
         function stopApp() {
             clearInterval(countdownInterval); cancelAnimationFrame(animationFrame);
             clearTimeout(flashTimeout); clearTimeout(respawnTimeout);
@@ -700,10 +918,12 @@
                 const offsetSecs = appState.offsetSecs;
                 const distance = targetDate.getTime() + (offsetSecs * 1000) - now;
 
-                // ECONOMÍA PASIVA
-                activeSecondsCounter++;
-                if (activeSecondsCounter >= 60) {
-                    activeSecondsCounter = 0; appState.coins++; updateCoinDisplay();
+                // ECONOMÍA PASIVA (Condicionada a juego activo)
+                if (appState.activeGame !== 'none') {
+                    activeSecondsCounter++;
+                    if (activeSecondsCounter >= 60) {
+                        activeSecondsCounter = 0; appState.coins++; updateCoinDisplay();
+                    }
                 }
 
                 if (distance <= 0) {
