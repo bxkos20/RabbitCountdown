@@ -17,527 +17,599 @@
             height: 100vh;
             margin: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             overflow: hidden;
             position: relative; 
+            gap: 15px;
+        }
+
+        /* --- NOTIFICACIÓN DE ACTUALIZACIÓN (TOAST) --- */
+        #toast {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4); padding: 12px 25px; border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 15px;
+            z-index: 1000; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); font-weight: 500;
+        }
+        #toast.show { top: 20px; }
+        #toast button {
+            background: rgba(0,0,0,0.3); border: none; color: white; border-radius: 50%;
+            width: 25px; height: 25px; cursor: pointer; font-weight: bold;
         }
 
         /* =========================================
-           2. CONTENEDOR PRINCIPAL (Glassmorphism)
+           2. CONTENEDORES (Glassmorphism)
            ========================================= */
         .container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 40px 60px;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            z-index: 2; 
-            position: relative; 
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2); padding: 25px 40px; border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); text-align: center; max-width: 500px; width: 90%;
+            z-index: 2; position: relative; 
         }
 
-        h1 {
-            margin-top: 0;
-            font-size: 2.5rem;
-            margin-bottom: 30px;
-            font-weight: 700;
-        }
+        h1 { margin-top: 0; font-size: 2rem; margin-bottom: 20px; font-weight: 700; }
 
-        /* --- Controles (Input Hora y Botón Iniciar) --- */
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-        }
-
+        /* --- Controles del reloj --- */
+        .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
         input[type="time"], input[type="number"], input[type="text"] {
-            padding: 12px 20px;
-            font-size: 1.1rem;
-            font-family: inherit;
-            border: none;
-            border-radius: 10px;
-            outline: none;
-            background: rgba(255, 255, 255, 0.9);
-            color: #333;
+            padding: 10px 15px; font-size: 1rem; font-family: inherit; border: none; border-radius: 10px;
+            outline: none; background: rgba(255, 255, 255, 0.9); color: #333;
         }
-
         input[type="time"] { cursor: pointer; }
 
-        #startBtn {
-            padding: 12px 25px;
-            font-size: 1.2rem;
-            font-family: inherit;
-            font-weight: 500;
-            border: none;
-            border-radius: 10px;
-            background-color: #ff4757;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .main-btn {
+            padding: 10px 20px; font-size: 1.1rem; font-family: inherit; font-weight: 500; border: none;
+            border-radius: 10px; background-color: #ff4757; color: white; cursor: pointer; transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
-            min-width: 120px;
         }
+        .main-btn:hover { background-color: #ff6b81; transform: translateY(-2px); }
+        .main-btn.stop-btn { background-color: #747d8c; box-shadow: none; transform: none; }
 
-        #startBtn:hover {
-            background-color: #ff6b81;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.6);
-        }
-
-        #startBtn.stop-btn {
-            background-color: #747d8c; 
-            box-shadow: none;
-            transform: none;
-        }
-
-        #startBtn.stop-btn:hover { background-color: #57606f; }
-
-        /* --- Cajas de Cuenta Atrás --- */
-        .countdown {
-            display: none;
-            justify-content: center;
-            gap: 20px;
-        }
-
+        /* --- Reloj --- */
+        .countdown { display: none; justify-content: center; gap: 15px; }
         .time-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 20px;
-            border-radius: 15px;
-            min-width: 80px;
-            transition: all 0.3s ease;
+            display: flex; flex-direction: column; align-items: center; background: rgba(0, 0, 0, 0.25);
+            padding: 15px; border-radius: 15px; min-width: 60px; transition: all 0.3s ease;
         }
-
-        .time-box span {
-            font-size: 3.5rem;
-            font-weight: 700;
-            line-height: 1;
-            margin-bottom: 5px;
-            transition: color 0.3s ease, text-shadow 0.3s ease;
-        }
-
-        .time-box small {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.8;
-        }
-
-        /* --- Estado de Peligro (Último minuto) --- */
-        .countdown.danger .time-box span {
-            color: #ff4757;
-            text-shadow: 0 0 15px rgba(255, 71, 87, 0.6);
-        }
-
-        #message {
-            display: none;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #2ed573;
-            margin-top: 20px;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
+        .time-box span { font-size: 2.5rem; font-weight: 700; line-height: 1; margin-bottom: 5px; transition: color 0.3s ease; }
+        .time-box small { font-size: 0.8rem; text-transform: uppercase; opacity: 0.8; }
+        .countdown.danger .time-box span { color: #ff4757; text-shadow: 0 0 15px rgba(255, 71, 87, 0.6); }
+        #message { display: none; font-size: 1.5rem; font-weight: 700; color: #2ed573; margin-top: 15px; animation: pulse 1.5s infinite; }
 
         /* =========================================
-           3. MENÚ DE AJUSTES Y BOTÓN EXTERNO
+           3. MINI JUEGO DE RULETA (TAPETE HORIZONTAL)
            ========================================= */
-        #settingsBtn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: background 0.3s ease;
+        #rouletteContainer { padding: 15px 20px; display: none; }
+        #rouletteContainer h2 { font-size: 1.2rem; margin: 0 0 10px 0; }
+        .coins-display { font-size: 1.1rem; font-weight: bold; color: #ffd32a; margin-bottom: 10px; }
+        
+        /* Contenedor principal del tapete sin scroll */
+        .r-wrapper {
+            display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; user-select: none; width: 100%;
         }
 
+        /* Grid Superior (Cero + Números) */
+        .r-grid-main { display: grid; grid-template-columns: 35px repeat(12, 1fr); grid-template-rows: repeat(3, 30px); gap: 3px; }
+        
+        /* Grid Medio (Docenas) */
+        .r-grid-dozens { display: grid; grid-template-columns: 35px repeat(3, 1fr); gap: 3px; height: 30px; }
+
+        /* Grid Inferior (Colores y Pares) */
+        .r-grid-bottom { display: grid; grid-template-columns: 35px repeat(4, 1fr); gap: 3px; height: 30px; }
+        .r-spacer { visibility: hidden; } /* Hueco debajo del cero */
+
+        /* Estilo base de casillas */
+        .r-cell {
+            border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: pointer;
+            position: relative; border: 1px solid rgba(255,255,255,0.3); transition: 0.1s;
+            display: flex; align-items: center; justify-content: center; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        .r-cell:hover { opacity: 0.8; transform: scale(0.95); z-index: 5;}
+        .r-zero { grid-row: 1 / span 3; grid-column: 1; }
+
+        /* Colores Tapete */
+        .c-red { background-color: #e84118; }
+        .c-black { background-color: #2f3640; }
+        .c-green { background-color: #4cd137; }
+        .c-blue { background-color: #0097e6; }
+        .c-dark { background-color: #353b48; }
+
+        /* Fichas visuales apiladas */
+        .chip {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #fbc531; color: black; border-radius: 50%; width: 16px; height: 16px;
+            font-size: 0.6rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
+            border: 2px dashed #e1b12c; pointer-events: none; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        /* Botones de acción ruleta */
+        .roulette-actions { display: flex; gap: 10px; justify-content: center;}
+        .r-btn { padding: 10px 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: white; transition: 0.2s;}
+        #clearBetsBtn { background-color: #e84118; }
+        #clearBetsBtn:disabled { background-color: #a4b0be; cursor: not-allowed; }
+        #spinBtn { background-color: #2ed573; flex-grow: 1;}
+        #spinBtn:disabled { background-color: #747d8c; cursor: not-allowed; }
+
+        /* Overlay de Animación Girando */
+        #rouletteSpinOverlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); border-radius: 20px;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 20; backdrop-filter: blur(5px);
+        }
+        .spin-number { font-size: 5rem; font-weight: bold; margin-bottom: 5px; }
+        .spin-text { font-size: 1.1rem; color: #fbc531; animation: pulse 0.5s infinite; text-align: center; padding: 0 10px;}
+
+        /* =========================================
+           4. MENÚ DE AJUSTES (MODAL)
+           ========================================= */
+        #settingsBtn {
+            position: fixed; top: 20px; right: 20px; z-index: 10; background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 50%; width: 45px; height: 45px;
+            font-size: 1.5rem; cursor: pointer; color: white; display: flex; justify-content: center; align-items: center;
+        }
         #settingsBtn:hover { background: rgba(255, 255, 255, 0.3); }
 
         .modal {
-            display: none; 
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); z-index: 100; justify-content: center; align-items: center;
         }
-
         .modal-content {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            min-width: 320px;
-            max-width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 25px; border-radius: 20px; text-align: center; min-width: 320px; max-width: 90%;
         }
 
-        .modal-content h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
+        .tabs { display: flex; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.3); margin-bottom: 15px; }
+        .tab-btn { background: transparent; border: none; color: white; font-size: 1rem; padding: 10px 15px; cursor: pointer; opacity: 0.6; }
+        .tab-btn.active { opacity: 1; border-bottom: 3px solid #2ed573; font-weight: bold; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .setting-group {
-            background: rgba(0,0,0,0.2);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .setting-group { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; margin-bottom: 15px; }
+        .setting-group label { display: block; margin-bottom: 5px; opacity: 0.9; }
 
-        .setting-group label {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-
-        #toggleImagesBtn {
-            background-color: #2ed573; 
-            font-size: 1rem;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-family: inherit;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            max-width: 250px;
-        }
-
-        #toggleImagesBtn.off { background-color: #ff4757; }
-
-        #closeSettingsBtn {
-            padding: 10px 25px;
-            background-color: transparent;
-            border: 1px solid white;
-            color: white;
-            border-radius: 10px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 1rem;
-            transition: all 0.3s;
-            margin-top: 10px;
-            width: 100%;
-            max-width: 250px;
-        }
-
-        #closeSettingsBtn:hover {
-            background-color: white;
-            color: #1e3c72;
-        }
+        .toggle-btn { background-color: #ff4757; padding: 10px 20px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; width: 100%; }
+        .toggle-btn.on { background-color: #2ed573; }
+        #closeSettingsBtn { padding: 10px 25px; background: transparent; border: 1px solid white; color: white; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 5px; }
 
         /* =========================================
-           4. ELEMENTOS DE ANIMACIÓN Y FÍSICAS
+           5. ANIMACIONES (IMÁGENES, EXPLOSIÓN)
            ========================================= */
         .bouncing-image {
-            display: none; 
-            position: absolute;
-            
-            /* -- AJUSTE DE ASPECT RATIO -- */
-            width: 75px; 
-            height: 75px; /* Altura forzada */
-            object-fit: cover; /* Recorta la imagen para llenar el cuadrado perfecto */
-            background-color: rgba(255, 255, 255, 0.1); /* Por si la imagen tiene transparencia */
-            /* ----------------------------- */
-
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4); 
-            z-index: 1; 
+            display: none; position: absolute; width: 75px; height: 75px; object-fit: cover;
+            background-color: rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 1; 
         }
-
         #img2 { filter: invert(1); }
-
-        #explosion {
-            display: none;
-            position: absolute;
-            font-size: 8rem;
-            z-index: 10;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
-
-        @keyframes explodeAnim {
-            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
-            40% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
-        }
-
-        #flashbang {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: white;
-            z-index: 9999;
-            pointer-events: none;
-        }
-
-        @keyframes flashAnim {
-            0% { opacity: 1; }
-            40% { opacity: 1; } 
-            100% { opacity: 0; } 
-        }
+        #explosion { display: none; position: absolute; font-size: 8rem; z-index: 10; transform: translate(-50%, -50%); pointer-events: none; }
+        @keyframes explodeAnim { 0% { transform: scale(0.2); opacity: 1; } 40% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+        #flashbang { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: white; z-index: 9999; pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <!-- Botón Ajustes -->
+    <!-- Notificación / Toast Inteligente -->
+    <div id="toast">
+        <span id="toastMsg"></span>
+        <button id="closeToastBtn">✖</button>
+    </div>
+
     <button id="settingsBtn" title="Ajustes">⚙️</button>
 
     <!-- Menú Modal de Ajustes -->
     <div id="settingsModal" class="modal">
         <div class="modal-content">
             <h2>Ajustes</h2>
-            
-            <div class="setting-group">
-                <label>Desfase del timbre (Segundos)</label>
-                <input type="number" id="offsetInput" value="0" style="width: 120px; text-align: center;">
+            <div class="tabs">
+                <button class="tab-btn active" data-target="tab-general">General</button>
+                <button class="tab-btn" data-target="tab-images">Imágenes</button>
+                <button class="tab-btn" data-target="tab-roulette">Ruleta</button>
             </div>
 
-            <div class="setting-group">
-                <label>Mensaje final personalizable</label>
-                <input type="text" id="customMessageInput" value="¡El tiempo ha terminado! 🎉" style="width: 90%; text-align: center;">
+            <div id="tab-general" class="tab-content active">
+                <div class="setting-group">
+                    <label>Desfase del timbre (Segundos)</label>
+                    <input type="number" id="offsetInput" value="0" style="width: 120px; text-align: center;">
+                </div>
+                <div class="setting-group">
+                    <label>Mensaje final personalizable</label>
+                    <input type="text" id="customMessageInput" value="¡El tiempo ha terminado! 🎉" style="width: 90%; text-align: center;">
+                </div>
             </div>
 
-            <div class="setting-group">
-                <label>URL de la imagen de rebote</label>
-                <input type="text" id="customUrlInput" style="width: 90%; font-size: 0.8rem;">
+            <div id="tab-images" class="tab-content">
+                <div class="setting-group">
+                    <label>URL de la imagen de rebote</label>
+                    <input type="text" id="customUrlInput" style="width: 90%; font-size: 0.8rem;">
+                </div>
+                <div class="setting-group">
+                    <label>Activar imágenes rebotantes</label>
+                    <p style="font-size: 0.8rem; margin-top:0;">(Si chocan ganas 1 moneda 🪙)</p>
+                    <button id="toggleImagesBtn" class="toggle-btn">Imágenes: OFF</button>
+                </div>
             </div>
 
-            <div class="setting-group">
-                <label>Animaciones (Imágenes)</label>
-                <button id="toggleImagesBtn">Imágenes: ON</button>
+            <div id="tab-roulette" class="tab-content">
+                <div class="setting-group">
+                    <label>Activar Minijuego de Ruleta</label>
+                    <p style="font-size: 0.8rem; margin-top:0;">(+1 moneda por cada minuto en marcha)</p>
+                    <button id="toggleRouletteBtn" class="toggle-btn">Ruleta: OFF</button>
+                </div>
             </div>
-
             <button id="closeSettingsBtn">Cerrar Ajustes</button>
         </div>
     </div>
 
-    <!-- Elementos rebotando y efectos -->
     <img id="img1" class="bouncing-image" alt="Imagen Normal">
     <img id="img2" class="bouncing-image" alt="Imagen Invertida">
     <div id="explosion">💥</div>
     <div id="flashbang"></div>
 
-    <!-- Interfaz Principal -->
+    <!-- Interfaz Principal del Reloj -->
     <div class="container" id="mainContainer">
         <h1>Cuenta Atrás</h1>
         <div class="controls">
             <input type="time" id="timeInput" required>
-            <button id="startBtn">Iniciar</button>
+            <button id="startBtn" class="main-btn">Iniciar</button>
         </div>
-
         <div class="countdown" id="countdownDisplay">
-            <div class="time-box">
-                <span id="hours">00</span>
-                <small>Horas</small>
-            </div>
-            <div class="time-box">
-                <span id="minutes">00</span>
-                <small>Minutos</small>
-            </div>
-            <div class="time-box">
-                <span id="seconds">00</span>
-                <small>Segundos</small>
-            </div>
+            <div class="time-box"><span id="hours">00</span><small>Horas</small></div>
+            <div class="time-box"><span id="minutes">00</span><small>Minutos</small></div>
+            <div class="time-box"><span id="seconds">00</span><small>Segundos</small></div>
         </div>
-
         <div id="message"></div>
     </div>
 
+    <!-- Interfaz de la Ruleta (Compacta y sin scroll) -->
+    <div class="container" id="rouletteContainer">
+        
+        <!-- Overlay Animación Ruleta -->
+        <div id="rouletteSpinOverlay">
+            <div class="spin-number" id="spinNumberDisplay">0</div>
+            <div class="spin-text" id="spinTextDisplay">Girando la ruleta...</div>
+        </div>
+
+        <h2>🎰 Tapete de Apuestas</h2>
+        <div class="coins-display">Saldo: <span id="coinDisplay">0</span> 🪙</div>
+        
+        <!-- Tablero Horizontal Completo -->
+        <div class="r-wrapper">
+            <!-- Números 1-36 + 0 -->
+            <div class="r-grid-main" id="mainNumbersGrid">
+                <!-- Se rellena por JavaScript -->
+            </div>
+            <!-- Docenas -->
+            <div class="r-grid-dozens">
+                <div class="r-spacer"></div>
+                <div class="r-cell c-blue" data-bet="1st12">1ª Doc.</div>
+                <div class="r-cell c-blue" data-bet="2nd12">2ª Doc.</div>
+                <div class="r-cell c-blue" data-bet="3rd12">3ª Doc.</div>
+            </div>
+            <!-- Colores y Pares -->
+            <div class="r-grid-bottom">
+                <div class="r-spacer"></div>
+                <div class="r-cell c-dark" data-bet="even">Par</div>
+                <div class="r-cell c-red" data-bet="red">Rojo</div>
+                <div class="r-cell c-black" data-bet="black">Negro</div>
+                <div class="r-cell c-dark" data-bet="odd">Impar</div>
+            </div>
+        </div>
+
+        <div class="roulette-actions">
+            <button id="clearBetsBtn" class="r-btn">Limpiar Tapete</button>
+            <button id="spinBtn" class="r-btn">Girar Ruleta</button>
+        </div>
+    </div>
+
     <!-- =========================================
-         JAVASCRIPT LÓGICO Y MOTOR
+         JAVASCRIPT LÓGICO Y MOTOR DE DATOS
          ========================================= -->
     <script>
-        // --- 1. ESTADO Y VARIABLES GLOBALES ---
+        // --- 1. SISTEMA DE DATOS CENTRALIZADO (JSON) ---
+        const APP_VERSION = "v6.0"; // Versión para el Toast de Novedades y control de caché
+        const STORAGE_KEY = "cuentaAtras_estado"; // Única clave para TODO el LocalStorage
+        const defaultUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.kym-cdn.com%2Fphotos%2Fimages%2Foriginal%2F003%2F136%2F289%2F782.jpg&f=1&nofb=1&ipt=e251919d7b84b303d27ec7336b0e609f7e6d6f02728fca0a66319ca9a4c37c25";
+
+        // Plantilla por defecto de nuestra "Base de datos" local
+        let appState = {
+            version: APP_VERSION,
+            offsetSecs: 0,
+            customMessage: "¡El tiempo ha terminado! 🎉",
+            customUrl: defaultUrl,
+            imagesEnabled: false,
+            rouletteEnabled: false,
+            coins: 10
+        };
+        
+        // Variables de Motor
         let countdownInterval = null;
         let animationFrame = null;
         let flashTimeout = null;
         let respawnTimeout = null;
-
         let isRunning = false;
-        let imagesAlive = false;
-        let imagesEnabled = true;
         let targetDate = null; 
+        
+        let imagesAlive = false;
+        let activeSecondsCounter = 0; 
+        let currentBets = {}; 
+        let isSpinning = false; 
+
+        // Cajas Físicas
         let containerRect = null; 
-
-        const defaultUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.kym-cdn.com%2Fphotos%2Fimages%2Foriginal%2F003%2F136%2F289%2F782.jpg&f=1&nofb=1&ipt=e251919d7b84b303d27ec7336b0e609f7e6d6f02728fca0a66319ca9a4c37c25";
-
+        let rouletteRect = null;
         const objImg1 = { el: document.getElementById('img1'), x: 0, y: 0, vx: 0, vy: 0, w: 75, h: 75 };
         const objImg2 = { el: document.getElementById('img2'), x: 0, y: 0, vx: 0, vy: 0, w: 75, h: 75 };
         
-        // --- 2. REFERENCIAS AL DOM ---
-        const ui = {
-            container: document.getElementById('mainContainer'),
-            explosion: document.getElementById('explosion'),
-            flashbang: document.getElementById('flashbang'),
-            startBtn: document.getElementById('startBtn'),
-            timeInput: document.getElementById('timeInput'),
-            countdownDisplay: document.getElementById('countdownDisplay'),
-            message: document.getElementById('message'),
-            hours: document.getElementById('hours'),
-            minutes: document.getElementById('minutes'),
-            seconds: document.getElementById('seconds')
-        };
+        // --- 2. MOTOR DE ALMACENAMIENTO ESCALABLE ---
+        function showToast(msg) {
+            document.getElementById('toastMsg').innerText = msg;
+            document.getElementById('toast').classList.add('show');
+            setTimeout(() => document.getElementById('toast').classList.remove('show'), 6000);
+        }
 
-        const settings = {
-            btn: document.getElementById('settingsBtn'),
-            modal: document.getElementById('settingsModal'),
-            closeBtn: document.getElementById('closeSettingsBtn'),
-            offsetInput: document.getElementById('offsetInput'),
-            messageInput: document.getElementById('customMessageInput'),
-            urlInput: document.getElementById('customUrlInput'),
-            toggleImagesBtn: document.getElementById('toggleImagesBtn')
-        };
+        function loadState() {
+            // Migración automática desde el sistema antiguo de variables sueltas (Versiones anteriores a la 6.0)
+            if (localStorage.getItem('appVersion') && !localStorage.getItem(STORAGE_KEY)) {
+                appState.coins = parseInt(localStorage.getItem('rouletteCoins')) || 10;
+                // Limpieza de basura antigua
+                ['appVersion', 'offsetSecs', 'customMessage', 'customUrl', 'imagesEnabled', 'rouletteEnabled', 'rouletteCoins'].forEach(k => localStorage.removeItem(k));
+                showToast("✨ Base de datos optimizada con éxito.");
+            }
 
-        // --- 3. GESTIÓN DE ALMACENAMIENTO (LocalStorage) ---
-        function loadSettings() {
-            settings.offsetInput.value = localStorage.getItem('offsetSecs') || 0;
-            settings.messageInput.value = localStorage.getItem('customMessage') || "¡El tiempo ha terminado! 🎉";
+            // Cargar el JSON del LocalStorage
+            const storedData = localStorage.getItem(STORAGE_KEY);
+            if (storedData) {
+                try {
+                    const parsedData = JSON.parse(storedData);
+                    
+                    // Comprobar si hay nueva versión para mostrar el aviso
+                    if (parsedData.version !== APP_VERSION) {
+                        showToast(`✨ Actualizado a ${APP_VERSION}: Sistema de guardado JSON optimizado para escalabilidad.`);
+                    }
+                    
+                    // Fusionar datos guardados con la plantilla por si hay campos nuevos
+                    appState = { ...appState, ...parsedData, version: APP_VERSION };
+                } catch(e) {
+                    console.error("Error leyendo datos, se usarán los valores por defecto.", e);
+                }
+            } else {
+                // Primer inicio en la web
+                showToast(`✨ ¡Bienvenido a Cuenta Atrás! Explora los ajustes (⚙️) para ver las opciones.`);
+            }
+
+            // Aplicar el estado a la interfaz
+            document.getElementById('offsetInput').value = appState.offsetSecs;
+            document.getElementById('customMessageInput').value = appState.customMessage;
+            document.getElementById('customUrlInput').value = appState.customUrl;
+            objImg1.el.src = appState.customUrl; 
+            objImg2.el.src = appState.customUrl;
+
+            updateToggleBtn(document.getElementById('toggleImagesBtn'), appState.imagesEnabled, "Imágenes");
             
-            const savedUrl = localStorage.getItem('customUrl') || defaultUrl;
-            settings.urlInput.value = savedUrl;
-            objImg1.el.src = savedUrl;
-            objImg2.el.src = savedUrl;
+            updateToggleBtn(document.getElementById('toggleRouletteBtn'), appState.rouletteEnabled, "Ruleta");
+            document.getElementById('rouletteContainer').style.display = appState.rouletteEnabled ? 'block' : 'none';
+            
+            updateCoinDisplay();
+            saveState(); // Asegurar guardado inicial coherente
+        }
 
-            const savedImagesEnabled = localStorage.getItem('imagesEnabled');
-            if (savedImagesEnabled !== null) {
-                imagesEnabled = savedImagesEnabled === 'true';
-                if (!imagesEnabled) {
-                    settings.toggleImagesBtn.innerText = "Imágenes: OFF";
-                    settings.toggleImagesBtn.classList.add('off');
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        }
+
+        function updateToggleBtn(btn, state, name) {
+            if(state) { btn.innerText = `${name}: ON`; btn.classList.add('on'); btn.classList.remove('off'); } 
+            else { btn.innerText = `${name}: OFF`; btn.classList.add('off'); btn.classList.remove('on'); }
+        }
+
+        loadState();
+        document.getElementById('closeToastBtn').addEventListener('click', () => document.getElementById('toast').classList.remove('show'));
+
+        // Control de Pestañas
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.target).classList.add('active');
+            });
+        });
+
+        // Eventos Modal y Guardado Automático
+        const settingsModal = document.getElementById('settingsModal');
+        document.getElementById('settingsBtn').addEventListener('click', () => settingsModal.style.display = 'flex');
+        document.getElementById('closeSettingsBtn').addEventListener('click', () => settingsModal.style.display = 'none');
+
+        document.getElementById('offsetInput').addEventListener('input', (e) => {
+            appState.offsetSecs = parseInt(e.target.value) || 0; saveState();
+        });
+        document.getElementById('customMessageInput').addEventListener('input', (e) => {
+            appState.customMessage = e.target.value; saveState();
+        });
+        document.getElementById('customUrlInput').addEventListener('input', (e) => {
+            appState.customUrl = e.target.value.trim() || defaultUrl;
+            objImg1.el.src = appState.customUrl; objImg2.el.src = appState.customUrl;
+            saveState();
+        });
+
+        document.getElementById('toggleImagesBtn').addEventListener('click', (e) => {
+            appState.imagesEnabled = !appState.imagesEnabled; saveState();
+            updateToggleBtn(e.target, appState.imagesEnabled, "Imágenes");
+            if (appState.imagesEnabled && isRunning) spawnImages(); else hideImages();
+        });
+
+        document.getElementById('toggleRouletteBtn').addEventListener('click', (e) => {
+            appState.rouletteEnabled = !appState.rouletteEnabled; saveState();
+            updateToggleBtn(e.target, appState.rouletteEnabled, "Ruleta");
+            document.getElementById('rouletteContainer').style.display = appState.rouletteEnabled ? 'block' : 'none';
+            updateCollisionCache(); 
+        });
+
+        // --- 3. RULETA: GENERACIÓN Y TAPETE HORIZONTAL ---
+        function updateCoinDisplay() {
+            document.getElementById('coinDisplay').innerText = appState.coins;
+            saveState();
+        }
+
+        const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+        const mainGrid = document.getElementById('mainNumbersGrid');
+        let numsHTML = `<div class="r-cell r-zero c-green" data-bet="0">0</div>`;
+        
+        for(let i = 1; i <= 36; i++) {
+            const col = Math.ceil(i/3) + 1; 
+            let row = (i % 3 === 0) ? 1 : ((i % 3 === 2) ? 2 : 3); 
+            const colorClass = redNums.includes(i) ? 'c-red' : 'c-black';
+            numsHTML += `<div class="r-cell ${colorClass}" data-bet="${i}" style="grid-column:${col}; grid-row:${row}">${i}</div>`;
+        }
+        mainGrid.innerHTML = numsHTML;
+
+        // --- 4. SISTEMA DE APUESTAS SIMULTÁNEAS ---
+        function renderChips() {
+            document.querySelectorAll('.chip').forEach(el => el.remove()); 
+            for (const [betKey, amount] of Object.entries(currentBets)) {
+                if(amount > 0) {
+                    const cell = document.querySelector(`[data-bet="${betKey}"]`);
+                    if(cell) cell.innerHTML += `<div class="chip">${amount}</div>`;
                 }
             }
         }
-        
-        function saveSetting(key, value) {
-            localStorage.setItem(key, value);
-        }
 
-        // --- 4. EVENTOS DE LA INTERFAZ ---
-        loadSettings();
-
-        settings.btn.addEventListener('click', () => settings.modal.style.display = 'flex');
-        settings.closeBtn.addEventListener('click', () => settings.modal.style.display = 'none');
-
-        settings.offsetInput.addEventListener('input', (e) => saveSetting('offsetSecs', e.target.value));
-        settings.messageInput.addEventListener('input', (e) => saveSetting('customMessage', e.target.value));
-        settings.urlInput.addEventListener('input', (e) => {
-            const newUrl = e.target.value.trim() || defaultUrl;
-            objImg1.el.src = newUrl;
-            objImg2.el.src = newUrl;
-            saveSetting('customUrl', newUrl);
+        document.querySelectorAll('.r-cell').forEach(cell => {
+            cell.addEventListener('click', function() {
+                if(isSpinning) return; 
+                
+                const betType = this.getAttribute('data-bet');
+                if (appState.coins >= 1) {
+                    appState.coins--;
+                    currentBets[betType] = (currentBets[betType] || 0) + 1;
+                    updateCoinDisplay();
+                    renderChips();
+                } else {
+                    showToast("No te quedan monedas 🪙");
+                }
+            });
         });
 
-        settings.toggleImagesBtn.addEventListener('click', () => {
-            imagesEnabled = !imagesEnabled;
-            saveSetting('imagesEnabled', imagesEnabled);
+        const spinBtn = document.getElementById('spinBtn');
+        const clearBetsBtn = document.getElementById('clearBetsBtn');
 
-            if (imagesEnabled) {
-                settings.toggleImagesBtn.innerText = "Imágenes: ON";
-                settings.toggleImagesBtn.classList.remove('off');
-                if (isRunning) spawnImages();
-            } else {
-                settings.toggleImagesBtn.innerText = "Imágenes: OFF";
-                settings.toggleImagesBtn.classList.add('off');
-                hideImages();
-            }
+        clearBetsBtn.addEventListener('click', () => {
+            if(isSpinning) return;
+            let refunded = 0;
+            for (let amt of Object.values(currentBets)) refunded += amt;
+            appState.coins += refunded;
+            currentBets = {};
+            updateCoinDisplay();
+            renderChips();
         });
 
-        // --- 5. MOTOR DE FÍSICAS Y ANIMACIONES ---
+        spinBtn.addEventListener('click', () => {
+            if(isSpinning) return; 
+
+            const totalBets = Object.values(currentBets).reduce((a, b) => a + b, 0);
+            if(totalBets === 0) { showToast("¡Coloca al menos una ficha en el tapete!"); return; }
+
+            isSpinning = true;
+            spinBtn.disabled = true;
+            clearBetsBtn.disabled = true;
+
+            const overlay = document.getElementById('rouletteSpinOverlay');
+            const spinNumberDisplay = document.getElementById('spinNumberDisplay');
+            const spinTextDisplay = document.getElementById('spinTextDisplay');
+            
+            overlay.style.display = 'flex';
+            spinTextDisplay.innerText = "Girando la ruleta...";
+            spinTextDisplay.style.color = "#fbc531";
+
+            let spinInterval = setInterval(() => { spinNumberDisplay.innerText = Math.floor(Math.random() * 37); }, 50);
+
+            setTimeout(() => {
+                clearInterval(spinInterval);
+                const resultNumber = Math.floor(Math.random() * 37);
+                
+                let resultColor = 'Verde';
+                if (resultNumber !== 0) resultColor = redNums.includes(resultNumber) ? 'Rojo' : 'Negro';
+                
+                spinNumberDisplay.innerText = resultNumber;
+                spinNumberDisplay.style.color = resultColor === 'Rojo' ? '#ff4757' : (resultColor === 'Negro' ? '#747d8c' : '#4cd137');
+
+                let totalWon = 0;
+                
+                for (const [betType, amount] of Object.entries(currentBets)) {
+                    if(!isNaN(betType) && parseInt(betType) === resultNumber) totalWon += amount * 36;
+                    else if(betType === '1st12' && resultNumber >= 1 && resultNumber <= 12) totalWon += amount * 3;
+                    else if(betType === '2nd12' && resultNumber >= 13 && resultNumber <= 24) totalWon += amount * 3;
+                    else if(betType === '3rd12' && resultNumber >= 25 && resultNumber <= 36) totalWon += amount * 3;
+                    else if(betType === 'red' && resultColor === 'Rojo') totalWon += amount * 2;
+                    else if(betType === 'black' && resultColor === 'Negro') totalWon += amount * 2;
+                    else if(betType === 'even' && resultNumber !== 0 && resultNumber % 2 === 0) totalWon += amount * 2;
+                    else if(betType === 'odd' && resultNumber !== 0 && resultNumber % 2 !== 0) totalWon += amount * 2;
+                }
+
+                if(totalWon > 0) {
+                    spinTextDisplay.innerText = `¡GANASTE ${totalWon} 🪙!`;
+                    spinTextDisplay.style.color = "#4cd137";
+                    appState.coins += totalWon;
+                } else {
+                    spinTextDisplay.innerText = "Perdiste las fichas 💀";
+                    spinTextDisplay.style.color = "#ff4757";
+                }
+
+                updateCoinDisplay();
+                currentBets = {}; 
+                renderChips();
+
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    spinNumberDisplay.style.color = "white"; 
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                    clearBetsBtn.disabled = false;
+                }, 2500);
+
+            }, 2000);
+        });
+
+        // --- 5. MOTOR DE FÍSICAS DE IMÁGENES ---
         function getRandSpeed() { return (Math.random() * 4 + 3) * (Math.random() > 0.5 ? 1 : -1); }
         
-        function updateCollisionCache() {
-            containerRect = ui.container.getBoundingClientRect();
+        function updateCollisionCache() { 
+            containerRect = document.getElementById('mainContainer').getBoundingClientRect();
+            const rc = document.getElementById('rouletteContainer');
+            rouletteRect = rc.style.display === 'block' ? rc.getBoundingClientRect() : null;
         }
         window.addEventListener('resize', updateCollisionCache);
 
         function hideImages() {
-            imagesAlive = false;
-            objImg1.el.style.display = 'none';
-            objImg2.el.style.display = 'none';
-            clearTimeout(respawnTimeout); 
+            imagesAlive = false; objImg1.el.style.display = 'none'; objImg2.el.style.display = 'none'; clearTimeout(respawnTimeout); 
         }
 
         function spawnImages() {
-            imagesAlive = true;
-            objImg1.el.style.display = 'block';
-            objImg2.el.style.display = 'block';
-            
-            objImg1.x = 0; objImg1.y = 0; 
-            objImg2.x = window.innerWidth - 75; objImg2.y = window.innerHeight - 75; 
-            
-            objImg1.vx = getRandSpeed(); objImg1.vy = getRandSpeed();
-            objImg2.vx = getRandSpeed(); objImg2.vy = getRandSpeed();
+            imagesAlive = true; objImg1.el.style.display = 'block'; objImg2.el.style.display = 'block';
+            objImg1.x = 0; objImg1.y = 0; objImg2.x = window.innerWidth - 75; objImg2.y = window.innerHeight - 75; 
+            objImg1.vx = getRandSpeed(); objImg1.vy = getRandSpeed(); objImg2.vx = getRandSpeed(); objImg2.vy = getRandSpeed();
         }
 
         function handleObstacleCollision(img, rect) {
             if (!rect) return; 
-
-            if (img.x < rect.right && img.x + img.w > rect.left &&
-                img.y < rect.bottom && img.y + img.h > rect.top) {
-                
-                const overlapL = (img.x + img.w) - rect.left;
-                const overlapR = rect.right - img.x;
-                const overlapT = (img.y + img.h) - rect.top;
-                const overlapB = rect.bottom - img.y;
-
+            if (img.x < rect.right && img.x + img.w > rect.left && img.y < rect.bottom && img.y + img.h > rect.top) {
+                const overlapL = (img.x + img.w) - rect.left; const overlapR = rect.right - img.x;
+                const overlapT = (img.y + img.h) - rect.top; const overlapB = rect.bottom - img.y;
                 const minOverlap = Math.min(overlapL, overlapR, overlapT, overlapB);
 
-                if (minOverlap === overlapL)      { img.x = rect.left - img.w; img.vx = -Math.abs(img.vx); }
-                else if (minOverlap === overlapR) { img.x = rect.right;        img.vx = Math.abs(img.vx); }
-                else if (minOverlap === overlapT) { img.y = rect.top - img.h;  img.vy = -Math.abs(img.vy); }
-                else if (minOverlap === overlapB) { img.y = rect.bottom;       img.vy = Math.abs(img.vy); }
+                if (minOverlap === overlapL) { img.x = rect.left - img.w; img.vx = -Math.abs(img.vx); }
+                else if (minOverlap === overlapR) { img.x = rect.right; img.vx = Math.abs(img.vx); }
+                else if (minOverlap === overlapT) { img.y = rect.top - img.h; img.vy = -Math.abs(img.vy); }
+                else if (minOverlap === overlapB) { img.y = rect.bottom; img.vy = Math.abs(img.vy); }
             }
         }
 
         function moveImage(img) {
-            img.x += img.vx;
-            img.y += img.vy;
-
-            // Como hemos forzado 75x75 en CSS, w y h son constantes en 75
-            // Pero usamos el rect por pura seguridad
-            const rect = img.el.getBoundingClientRect();
-            img.w = rect.width;
-            img.h = rect.height;
-
-            const maxW = window.innerWidth;
-            const maxH = window.innerHeight;
+            img.x += img.vx; img.y += img.vy;
+            const rect = img.el.getBoundingClientRect(); img.w = rect.width; img.h = rect.height;
+            const maxW = window.innerWidth; const maxH = window.innerHeight;
             
             if (img.x <= 0) { img.x = 0; img.vx = Math.abs(img.vx); }
             if (img.x + img.w >= maxW) { img.x = maxW - img.w; img.vx = -Math.abs(img.vx); }
@@ -545,41 +617,34 @@
             if (img.y + img.h >= maxH) { img.y = maxH - img.h; img.vy = -Math.abs(img.vy); }
 
             handleObstacleCollision(img, containerRect);
+            handleObstacleCollision(img, rouletteRect); 
 
-            img.el.style.left = img.x + 'px';
-            img.el.style.top = img.y + 'px';
+            img.el.style.left = img.x + 'px'; img.el.style.top = img.y + 'px';
         }
 
         function triggerExplosion() {
             hideImages(); 
-
             const cX = (Math.max(objImg1.x, objImg2.x) + Math.min(objImg1.x + objImg1.w, objImg2.x + objImg2.w)) / 2;
             const cY = (Math.max(objImg1.y, objImg2.y) + Math.min(objImg1.y + objImg1.h, objImg2.y + objImg2.h)) / 2;
 
-            ui.explosion.style.left = cX + 'px';
-            ui.explosion.style.top = cY + 'px';
-            ui.explosion.style.display = 'block';
-            
-            ui.explosion.style.animation = 'none';
-            ui.explosion.offsetHeight; 
-            ui.explosion.style.animation = 'explodeAnim 0.7s forwards';
+            const exp = document.getElementById('explosion');
+            exp.style.left = cX + 'px'; exp.style.top = cY + 'px'; exp.style.display = 'block';
+            exp.style.animation = 'none'; exp.offsetHeight; exp.style.animation = 'explodeAnim 0.7s forwards';
 
-            ui.flashbang.style.display = 'block';
-            ui.flashbang.style.animation = 'none';
-            ui.flashbang.offsetHeight;
-            ui.flashbang.style.animation = 'flashAnim 5s forwards';
+            const fb = document.getElementById('flashbang');
+            fb.style.display = 'block'; fb.style.animation = 'none'; fb.offsetHeight; fb.style.animation = 'flashAnim 5s forwards';
 
-            flashTimeout = setTimeout(() => { ui.flashbang.style.display = 'none'; }, 5000);
-            respawnTimeout = setTimeout(() => { if (isRunning && imagesEnabled) spawnImages(); }, 15000);
+            appState.coins += 1; updateCoinDisplay();
+            showToast("💥 ¡Imágenes chocadas! Has ganado +1 Moneda 🪙");
+
+            flashTimeout = setTimeout(() => { fb.style.display = 'none'; }, 5000);
+            respawnTimeout = setTimeout(() => { if (isRunning && appState.imagesEnabled) spawnImages(); }, 30000); 
         }
 
         function gameLoop() {
             if (!isRunning) return;
-
             if (imagesAlive) {
-                moveImage(objImg1);
-                moveImage(objImg2);
-
+                moveImage(objImg1); moveImage(objImg2);
                 if (objImg1.w > 0 && objImg2.w > 0) {
                     if (objImg1.x < objImg2.x + objImg2.w && objImg1.x + objImg1.w > objImg2.x &&
                         objImg1.y < objImg2.y + objImg2.h && objImg1.y + objImg1.h > objImg2.y) {
@@ -590,80 +655,74 @@
             animationFrame = requestAnimationFrame(gameLoop);
         }
 
-        // --- 6. LÓGICA DE LA CUENTA ATRÁS ---
+        // --- 6. LÓGICA DEL RELOJ PRINCIPAL ---
         function stopApp() {
-            clearInterval(countdownInterval);
-            cancelAnimationFrame(animationFrame);
-            clearTimeout(flashTimeout);
-            clearTimeout(respawnTimeout);
+            clearInterval(countdownInterval); cancelAnimationFrame(animationFrame);
+            clearTimeout(flashTimeout); clearTimeout(respawnTimeout);
+            isRunning = false; activeSecondsCounter = 0;
             
-            isRunning = false;
+            const btn = document.getElementById('startBtn');
+            btn.innerText = "Iniciar"; btn.classList.remove('stop-btn');
             
-            ui.startBtn.innerText = "Iniciar";
-            ui.startBtn.classList.remove('stop-btn');
-            
-            ui.countdownDisplay.style.display = 'none';
-            ui.countdownDisplay.classList.remove('danger');
-            ui.message.style.display = 'none';
-            ui.explosion.style.display = 'none';
-            ui.flashbang.style.display = 'none'; 
+            document.getElementById('countdownDisplay').style.display = 'none';
+            document.getElementById('countdownDisplay').classList.remove('danger');
+            document.getElementById('message').style.display = 'none';
             
             hideImages();
-            ui.timeInput.value = ''; 
+            document.getElementById('explosion').style.display = 'none';
+            document.getElementById('flashbang').style.display = 'none'; 
+            document.getElementById('timeInput').value = ''; 
         }
 
-        ui.startBtn.addEventListener('click', function() {
+        document.getElementById('startBtn').addEventListener('click', function() {
             if (isRunning) { stopApp(); return; }
-            if (!ui.timeInput.value) { alert('Por favor, selecciona una hora.'); return; }
+            if (!document.getElementById('timeInput').value) { alert('Por favor, selecciona una hora.'); return; }
 
-            isRunning = true;
+            isRunning = true; activeSecondsCounter = 0;
             
-            ui.startBtn.innerText = "Detener";
-            ui.startBtn.classList.add('stop-btn');
-            ui.message.style.display = 'none';
-            ui.countdownDisplay.style.display = 'flex';
-            ui.countdownDisplay.classList.remove('danger');
-            ui.explosion.style.display = 'none';
-            ui.flashbang.style.display = 'none';
+            this.innerText = "Detener"; this.classList.add('stop-btn');
+            document.getElementById('message').style.display = 'none';
+            document.getElementById('countdownDisplay').style.display = 'flex';
+            document.getElementById('countdownDisplay').classList.remove('danger');
             
             updateCollisionCache(); 
 
-            if (imagesEnabled) spawnImages();
+            if (appState.imagesEnabled) spawnImages();
             animationFrame = requestAnimationFrame(gameLoop);
 
-            const [inputHours, inputMinutes] = ui.timeInput.value.split(':');
-            targetDate = new Date();
-            targetDate.setHours(parseInt(inputHours), parseInt(inputMinutes), 0, 0);
-
-            if (targetDate.getTime() < new Date().getTime()) {
-                targetDate.setDate(targetDate.getDate() + 1); 
-            }
+            const [inputHours, inputMinutes] = document.getElementById('timeInput').value.split(':');
+            targetDate = new Date(); targetDate.setHours(parseInt(inputHours), parseInt(inputMinutes), 0, 0);
+            if (targetDate.getTime() < new Date().getTime()) { targetDate.setDate(targetDate.getDate() + 1); }
 
             clearInterval(countdownInterval);
             countdownInterval = setInterval(function() {
                 const now = new Date().getTime();
-                const offsetSecs = parseInt(settings.offsetInput.value) || 0;
-                
+                const offsetSecs = appState.offsetSecs;
                 const distance = targetDate.getTime() + (offsetSecs * 1000) - now;
+
+                // ECONOMÍA PASIVA
+                activeSecondsCounter++;
+                if (activeSecondsCounter >= 60) {
+                    activeSecondsCounter = 0; appState.coins++; updateCoinDisplay();
+                }
 
                 if (distance <= 0) {
                     stopApp(); 
-                    const customMsg = settings.messageInput.value.trim();
-                    ui.message.innerText = customMsg !== "" ? customMsg : "¡El tiempo ha terminado! 🎉";
-                    ui.message.style.display = 'block';
-                    return;
+                    const customMsg = appState.customMessage.trim();
+                    document.getElementById('message').innerText = customMsg !== "" ? customMsg : "¡El tiempo ha terminado! 🎉";
+                    document.getElementById('message').style.display = 'block'; return;
                 }
 
-                if (distance <= 60000) ui.countdownDisplay.classList.add('danger');
-                else ui.countdownDisplay.classList.remove('danger');
+                if (distance <= 60000) document.getElementById('countdownDisplay').classList.add('danger');
+                else document.getElementById('countdownDisplay').classList.remove('danger');
 
                 const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const s = Math.floor((distance % (1000 * 60)) / 1000);
 
-                ui.hours.innerText = h.toString().padStart(2, '0');
-                ui.minutes.innerText = m.toString().padStart(2, '0');
-                ui.seconds.innerText = s.toString().padStart(2, '0');
+                document.getElementById('hours').innerText = h.toString().padStart(2, '0');
+                document.getElementById('minutes').innerText = m.toString().padStart(2, '0');
+                document.getElementById('seconds').innerText = s.toString().padStart(2, '0');
 
             }, 1000);
         });
