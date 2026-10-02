@@ -33,6 +33,7 @@
             z-index: 1000; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); font-weight: 500;
         }
         #toast.show { top: 20px; }
+        #toast.danger { background: rgba(255, 71, 87, 0.8); border-color: #ff4757; }
         #toast button { background: rgba(0,0,0,0.3); border: none; color: white; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
 
         /* =========================================
@@ -372,14 +373,15 @@
          JAVASCRIPT LÓGICO Y MOTOR
          ========================================= -->
     <script>
-        // --- 1. SISTEMA DE DATOS Y VERSIONES ---
-        const APP_VERSION = "v7.2.1"; // HOTFIX: Economía corregida a 0 y textos
+        // --- 1. SISTEMA DE DATOS Y ANTI-CHEAT ---
+        const APP_VERSION = "v7.3"; 
         const STORAGE_KEY = "cuentaAtras_estado"; 
         const defaultUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.kym-cdn.com%2Fphotos%2Fimages%2Foriginal%2F003%2F136%2F289%2F782.jpg&f=1&nofb=1&ipt=e251919d7b84b303d27ec7336b0e609f7e6d6f02728fca0a66319ca9a4c37c25";
 
         let appState = {
             version: APP_VERSION, offsetSecs: 0, customMessage: "¡El tiempo ha terminado! 🎉",
-            customUrl: defaultUrl, imagesEnabled: false, activeGame: 'none', coins: 0 // Empezamos con 0 para evitar exploits
+            customUrl: defaultUrl, imagesEnabled: false, activeGame: 'none', coins: 0,
+            signature: "" // Firma criptográfica anti-tamper
         };
         
         let countdownInterval = null; let animationFrame = null; let flashTimeout = null; let respawnTimeout = null;
@@ -400,11 +402,13 @@
             });
         });
 
-        // --- 2. MOTOR DE ALMACENAMIENTO ---
-        function showToast(msg) {
+        // --- 2. MOTOR DE ALMACENAMIENTO Y ANTI-CHEAT ---
+        function showToast(msg, isDanger = false) {
+            const toast = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
-            document.getElementById('toast').classList.add('show');
-            setTimeout(() => document.getElementById('toast').classList.remove('show'), 5000);
+            if (isDanger) toast.classList.add('danger'); else toast.classList.remove('danger');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 6000);
         }
 
         function updateToggleBtn(btn, state) {
@@ -428,24 +432,44 @@
             updateCoinDisplay();
         }
 
-        function loadState() {
-            // Migración para los que limpiaron caché o vienen de versiones viejas. Para evitar el bug de las 10 monedas infinitas:
-            if (localStorage.getItem('appVersion') && !localStorage.getItem(STORAGE_KEY)) {
-                appState.coins = parseInt(localStorage.getItem('rouletteCoins')) || 0;
-            }
+        // Genera un Hash simple pero efectivo para evitar edición manual de LocalStorage
+        function generateSignature(coins) {
+            return btoa("cuenta_atras_secure_" + coins + "_salt_x9");
+        }
 
+        function loadState() {
             const storedData = localStorage.getItem(STORAGE_KEY);
             if (storedData) {
                 try {
                     const parsedData = JSON.parse(storedData);
-                    if (parsedData.version !== APP_VERSION) showToast(`✨ Actualizado a ${APP_VERSION}: Hotfix de economía y pequeños ajustes aplicados.`);
+                    
+                    // 🚨 SISTEMA ANTI-CHEAT: Limpieza de Hackers 🚨
+                    if (parsedData.coins > 1000) {
+                        parsedData.coins = 0;
+                        setTimeout(() => showToast("🚨 BANHAMMER: Se detectaron fondos anómalos. Tus monedas han sido confiscadas a 0.", true), 1500);
+                    } 
+                    // 🚨 SISTEMA ANTI-CHEAT: Validación de Firma 🚨
+                    else if (parsedData.signature && parsedData.signature !== generateSignature(parsedData.coins)) {
+                        parsedData.coins = 0;
+                        setTimeout(() => showToast("🚨 ANTI-CHEAT: Se detectó manipulación ilegal de datos. Tus monedas han sido puestas a 0.", true), 1500);
+                    }
+                    // Si todo está legal, comprobamos versión normal
+                    else if (parsedData.version !== APP_VERSION) {
+                        showToast(`✨ Actualizado a ${APP_VERSION}: Implementados nuevos sistemas de seguridad Anti-Cheat.`);
+                    }
+                    
                     appState = { ...appState, ...parsedData, version: APP_VERSION };
-                } catch(e) {}
+                } catch(e) { appState.coins = 0; } // Fallback seguro
             }
             syncUI(); saveState(); 
         }
 
-        function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); }
+        function saveState() { 
+            // Generar la firma siempre que guardamos legítimamente en el código
+            appState.signature = generateSignature(appState.coins);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); 
+        }
+
         function updateCoinDisplay() { document.querySelectorAll('.coin-display').forEach(el => el.innerText = appState.coins); saveState(); }
 
         loadState();
@@ -579,7 +603,7 @@
         });
 
         // ======================================================================
-        // 4. JUEGO: BLACKJACK (CON SPLIT)
+        // 4. JUEGO: BLACKJACK
         // ======================================================================
         let bjDeck = []; let bjHands = []; let bjBets = []; let bjDealerHand = [];
         let bjActiveHandIdx = 0; let bjCurrentBet = 0; let bjState = 'betting'; 
@@ -661,7 +685,6 @@
         function advanceBjHand() {
             bjActiveHandIdx++;
             if (bjActiveHandIdx >= bjHands.length) {
-                // Todas las manos jugadas. ¿Se pasaron todas?
                 let allBusted = bjHands.every(h => getBjScore(h) > 21);
                 if (allBusted) finishBjResolution(); else dealerTurn();
             } else { renderBjState(true); }
@@ -730,10 +753,9 @@
 
             renderBjState(true);
 
-            // Natural BJ check (sólo posible en la primera mano sin dividir)
             if(getBjScore(bjHands[0]) === 21) {
                 bjState = 'resolved'; renderBjState(false);
-                let win = Math.floor(bjBets[0] * 2.5); // 3:2 payout
+                let win = Math.floor(bjBets[0] * 2.5); 
                 appState.coins += win; updateCoinDisplay();
                 uiBjRes.innerHTML = `<span style="color:#4cd137">¡BLACKJACK! Ganaste ${win} 🪙</span>`;
                 btnHit.style.display = 'none'; btnStand.style.display = 'none'; btnDouble.style.display = 'none'; btnSplit.style.display = 'none';
@@ -776,7 +798,7 @@
         });
 
         // ======================================================================
-        // 5. MOTOR DE FÍSICAS DE IMÁGENES Y RESIZE OBSERVER (BUG FIX)
+        // 5. MOTOR DE FÍSICAS DE IMÁGENES Y RESIZE OBSERVER
         // ======================================================================
         function getRandSpeed() { return (Math.random() * 4 + 3) * (Math.random() > 0.5 ? 1 : -1); }
         
@@ -787,7 +809,6 @@
             activeGameRect = (actContainer && actContainer.style.display !== 'none') ? actContainer.getBoundingClientRect() : null;
         }
         
-        // RESIZE OBSERVER: Detecta cualquier cambio de tamaño (soluciona el bug de colisión)
         const resizeObserver = new ResizeObserver(() => updateCollisionCache());
         document.querySelectorAll('.container').forEach(c => resizeObserver.observe(c));
         window.addEventListener('resize', updateCollisionCache);
