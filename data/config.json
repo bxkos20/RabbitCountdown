@@ -1,0 +1,14 @@
+{
+  "version": "v8.4",
+  "storageKey": "cuentaAtras_estado",
+  "salt": "casino_secure_salt_v8.4",
+  "defaultUrl": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.kym-cdn.com%2Fphotos%2Fimages%2Foriginal%2F003%2F136%2F289%2F782.jpg&f=1&nofb=1&ipt=e251919d7b84b303d27ec7336b0e609f7e6d6f02728fca0a66319ca9a4c37c25",
+  "backgrounds": {
+    "default": { "name": "Clásico", "url": "" },
+    "eta": { "name": "ETA", "url": "https://media.cnn.com/api/v1/images/stellar/prod/cnne-397053-eta-announce-cessation-of-armed-conflict.jpg?c=16x9&q=h_833,w_1480,c_fill" },
+    "imperio": { "name": "Imperio", "url": "https://e01-phantom-elmundo.uecdn.es/988efe188f45bd45da6cd1997682c3a3/crop/0x0/1200x800/resize/828/f/jpg/assets/multimedia/imagenes/2024/02/15/17079962629188.png" },
+    "matrix": { "name": "Matrix", "url": "https://cdn.wallpapersafari.com/21/90/xY9urp.jpg" },
+    "goats": { "name": "Goats", "url": "https://www.marketingregistrado.com/img/noticias/pnco4jfsvvf2vh5iwb4xgjlnbe.jpg" },
+    "pan": { "name": "Pan", "url": "https://i.redd.it/02t6wim5mf501.jpg" }
+  }
+}
