@@ -1,5 +1,7 @@
 import { state, config, modificarMonedas, saveState, currentChipValue, setChipValue } from './core.js';
 import { spawnImages, hideImages, updateCollisionCache } from './physics.js';
+import { recordChallengeEvent } from './challenges.js';
+import { backgrounds } from './backgrounds.js';
 
 let toastTimeout = null;
 
@@ -17,7 +19,7 @@ export function updateCoinDisplay() {
 }
 
 function applyBackground() {
-    const bg = config.backgrounds[state.activeBg];
+    const bg = backgrounds[state.activeBg];
     if (bg && bg.url !== '') {
         document.body.style.background = `url('${bg.url}') no-repeat center center fixed`;
         document.body.style.backgroundSize = 'cover';
@@ -54,15 +56,15 @@ function renderStore() {
     const grid = document.getElementById('bgStoreGrid');
     if (!grid) return;
     grid.innerHTML = '';
-    Object.keys(config.backgrounds).forEach(key => {
-        const bg = config.backgrounds[key];
+    Object.keys(backgrounds).forEach(key => {
+        const bg = backgrounds[key];
         const isOwned = state.ownedBgs.includes(key);
         const isEquipped = state.activeBg === key;
         
         let btnHTML = '';
         if (isEquipped) btnHTML = `<button class="c-btn" style="background:#747d8c; width:100%;" disabled>Equipado</button>`;
         else if (isOwned) btnHTML = `<button class="c-btn equip-bg-btn" data-id="${key}" style="background:#3498db; width:100%;">Equipar</button>`;
-        else btnHTML = `<button class="c-btn buy-bg-btn" data-id="${key}" style="background:#2ed573; width:100%;">Comprar 100🪙</button>`;
+        else btnHTML = `<button class="c-btn buy-bg-btn" data-id="${key}" style="background:#2ed573; width:100%;">${bg.price === 0 ? 'Obtener gratis' : `Comprar ${bg.price}🪙`}</button>`;
 
         const previewStyle = bg.url ? `background: url('${bg.url}')` : `background: linear-gradient(135deg, #1e3c72, #2a5298)`;
 
@@ -77,10 +79,13 @@ function renderStore() {
 
     document.querySelectorAll('.buy-bg-btn').forEach(btn => btn.addEventListener('click', (e) => {
         const id = e.target.getAttribute('data-id');
-        if (modificarMonedas(-100)) {
+        const background = backgrounds[id];
+        if (!background) return;
+        if (modificarMonedas(-background.price)) {
             state.ownedBgs.push(id); state.activeBg = id;
             saveState(); applyBackground(); renderStore(); updateCoinDisplay();
-            showToast(`✨ Fondo '${config.backgrounds[id].name}' adquirido y equipado.`);
+            showToast(`✨ Fondo '${background.name}' adquirido y equipado.`);
+            recordChallengeEvent('store_purchase', { backgroundId: id });
         } else { showToast("🪙 Monedas insuficientes.", true); }
     }));
 
@@ -91,6 +96,10 @@ function renderStore() {
 }
 
 export function initUI() {
+    window.addEventListener('app-toast', event => {
+        showToast(event.detail.message, event.detail.isDanger);
+    });
+
     document.getElementById('closeToastBtn').addEventListener('click', () => {
         document.getElementById('toast').classList.remove('show');
         clearTimeout(toastTimeout);

@@ -2,7 +2,7 @@ export let config = null;
 export let state = {
     version: "", offsetSecs: 0, customMessage: "¡El tiempo ha terminado! 🎉",
     customUrl: "", imagesEnabled: false, activeGame: 'none', coins: 0,
-    ownedBgs: ['default'], activeBg: 'default', signature: ""
+    ownedBgs: ['default'], activeBg: 'default', signature: "", challengeSession: null
 };
 
 export let currentChipValue = 1;
@@ -14,8 +14,7 @@ function createFallbackConfig() {
         version: "v8.4",
         storageKey: "cuentaAtras_estado",
         salt: "casino_secure_salt_v8.4",
-        defaultUrl: "",
-        backgrounds: { default: { name: "Clásico", url: "" } }
+        defaultUrl: ""
     };
 }
 
@@ -28,25 +27,14 @@ export async function initCore() {
             !loadedConfig ||
             typeof loadedConfig.version !== "string" ||
             typeof loadedConfig.storageKey !== "string" ||
-            typeof loadedConfig.salt !== "string" ||
-            !loadedConfig.backgrounds ||
-            typeof loadedConfig.backgrounds !== "object" ||
-            !loadedConfig.backgrounds.default
+            typeof loadedConfig.salt !== "string"
         ) {
             throw new Error("La estructura de data/config.json no es válida.");
         }
         config = {
             ...loadedConfig,
-            defaultUrl: typeof loadedConfig.defaultUrl === "string" ? loadedConfig.defaultUrl : "",
-            backgrounds: Object.fromEntries(
-                Object.entries(loadedConfig.backgrounds).filter(([, background]) =>
-                    background &&
-                    typeof background.name === "string" &&
-                    typeof background.url === "string"
-                )
-            )
+            defaultUrl: typeof loadedConfig.defaultUrl === "string" ? loadedConfig.defaultUrl : ""
         };
-        if (!config.backgrounds.default) throw new Error("Falta el fondo predeterminado.");
     } catch(e) {
         console.error("No se pudo cargar data/config.json; se utilizará la configuración alternativa.", e);
         config = createFallbackConfig();
@@ -129,14 +117,12 @@ export function loadState(onCorruptCallback) {
                 imagesEnabled: typeof parsedData.imagesEnabled === "boolean" && parsedData.imagesEnabled,
                 activeGame: ["none", "roulette", "blackjack"].includes(parsedData.activeGame) ? parsedData.activeGame : "none",
                 ownedBgs: Array.isArray(parsedData.ownedBgs)
-                    ? [...new Set(parsedData.ownedBgs.filter(id => typeof id === "string" && Object.prototype.hasOwnProperty.call(config.backgrounds, id)))]
+                    ? [...new Set(parsedData.ownedBgs.filter(id => typeof id === "string"))]
                     : ["default"],
-                activeBg: typeof parsedData.activeBg === "string" && Object.prototype.hasOwnProperty.call(config.backgrounds, parsedData.activeBg)
+                activeBg: typeof parsedData.activeBg === "string"
                     ? parsedData.activeBg
                     : "default"
             };
-            if (!state.ownedBgs.includes("default")) state.ownedBgs.unshift("default");
-            if (!state.ownedBgs.includes(state.activeBg)) state.activeBg = "default";
 
             if (sameVersion && !signatureIsValid) {
                 state.coins = 0;
@@ -155,7 +141,8 @@ export function loadState(onCorruptCallback) {
                 coins: 0,
                 ownedBgs: ["default"],
                 activeBg: "default",
-                signature: generateSignature(0)
+                signature: generateSignature(0),
+                challengeSession: null
             };
         }
     } else {

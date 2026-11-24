@@ -2,6 +2,8 @@ import { initCore, state, loadState, modificarMonedas } from './core.js';
 import { initUI, showToast, syncUI } from './ui.js';
 import { initPhysics, gameLoop, spawnImages, hideImages, updateCollisionCache, cancelAnim } from './physics.js';
 import { initRoulette, initBlackjack } from './casino.js';
+import { initChallenges, recordChallengeEvent } from './challenges.js';
+import { initBackgrounds, normalizeBackgroundState } from './backgrounds.js';
 
 window.isRunning = false;
 let countdownInterval = null;
@@ -10,11 +12,14 @@ let lastCoinCheckAt = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
     await initCore();
+    await initBackgrounds();
     
     // Avisar si el saldo guardado no coincide con su firma local.
     loadState(() => {
         showToast("🚨 Se detectó una modificación no válida del saldo local.", true);
     });
+    normalizeBackgroundState();
+    await initChallenges();
 
     initUI();
     initPhysics();
@@ -76,6 +81,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (earnedCoins > 0) {
                     activeTimeMs -= earnedCoins * 60000;
                     modificarMonedas(earnedCoins);
+                    recordChallengeEvent('active_minute', {
+                        activeGame: state.activeGame,
+                        imagesEnabled: state.imagesEnabled
+                    }, earnedCoins);
                 }
             }
             lastCoinCheckAt = now;

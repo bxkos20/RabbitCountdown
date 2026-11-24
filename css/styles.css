@@ -76,3 +76,11 @@ input[type="time"], input[type="number"], input[type="text"], select { padding: 
 #explosion { display: none; position: absolute; font-size: 8rem; z-index: 10; transform: translate(-50%, -50%); pointer-events: none; filter: drop-shadow(0 0 20px rgba(255,100,0,0.8));}
 @keyframes explodeAnim { 0% { transform: scale(0.2); opacity: 1; } 40% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
 #flashbang { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: white; z-index: 9999; pointer-events: none; }
+.session-challenge { margin-top: 16px; padding: 12px 15px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; background: rgba(0,0,0,0.28); text-align: left; }
+.challenge-heading, .challenge-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.challenge-heading { font-size: 0.9rem; }
+#challengeTimer { font-variant-numeric: tabular-nums; opacity: 0.85; }
+#challengeText { margin: 8px 0; font-size: 0.9rem; }
+#challengeProgress { width: 100%; height: 12px; accent-color: #2ed573; }
+.challenge-footer { font-size: 0.8rem; color: #ffd32a; }
+.challenge-complete { display: block; margin-top: 6px; color: #2ed573; text-align: center; }

@@ -1,5 +1,6 @@
 import { state, modificarMonedas } from './core.js';
 import { showToast, updateCoinDisplay } from './ui.js';
+import { recordChallengeEvent } from './challenges.js';
 
 let animationFrame = null;
 let flashTimeout = null;
@@ -68,6 +69,7 @@ function moveImage(img) {
 
 export function triggerExplosion() {
     hideImages(); 
+    recordChallengeEvent('image_collision', { activeGame: state.activeGame });
     const cX = (Math.max(objImg1.x, objImg2.x) + Math.min(objImg1.x + objImg1.w, objImg2.x + objImg2.w)) / 2;
     const cY = (Math.max(objImg1.y, objImg2.y) + Math.min(objImg1.y + objImg1.h, objImg2.y + objImg2.h)) / 2;
 

@@ -1,6 +1,7 @@
 import { state, modificarMonedas, checkSignature, currentChipValue } from './core.js';
 import { showToast } from './ui.js';
 import { updateCollisionCache } from './physics.js';
+import { recordChallengeEvent } from './challenges.js';
 
 // --- RULETA ---
 export function initRoulette() {
@@ -30,7 +31,9 @@ export function initRoulette() {
             if(isSpinning) return; 
             const betType = this.getAttribute('data-bet');
             if (modificarMonedas(-currentChipValue)) {
-                currentBets[betType] = (currentBets[betType] || 0) + currentChipValue; renderRouletteChips();
+                currentBets[betType] = (currentBets[betType] || 0) + currentChipValue;
+                recordChallengeEvent('roulette_bet', { betType });
+                renderRouletteChips();
             } else { showToast("Monedas insuficientes 🪙", true); }
         });
     });
@@ -79,6 +82,13 @@ export function initRoulette() {
             if(totalWon > 0) {
                 spinTextDisp.innerText = `¡GANASTE ${totalWon} 🪙!`; spinTextDisp.style.color = "#4cd137"; modificarMonedas(totalWon);
             } else { spinTextDisp.innerText = "Perdiste las fichas 💀"; spinTextDisp.style.color = "#ff4757"; }
+            const challengeColor = resultColor.toLowerCase();
+            recordChallengeEvent('roulette_round', {
+                outcome: totalWon > 0 ? 'win' : 'loss',
+                number: result,
+                color: challengeColor,
+                parity: result === 0 ? 'zero' : (result % 2 === 0 ? 'even' : 'odd')
+            });
 
             currentBets = {}; renderRouletteChips();
             setTimeout(() => {
@@ -166,14 +176,20 @@ export function initBlackjack() {
         for(let i=0; i<bjHands.length; i++) {
             let pScore = getBjScore(bjHands[i]); let bet = bjBets[i]; let msg = bjHands.length > 1 ? `Mano ${i+1}: ` : "";
             const playerNatural = bjHands[i].length === 2 && pScore === 21;
-            if (pScore > 21) { msg += "Te pasaste. 💀"; } 
+            let outcome = 'push';
+            if (pScore > 21) { outcome = 'loss'; msg += "Te pasaste. 💀"; }
             else if (playerNatural && dealerNatural) { msg += "Empate de blackjacks."; totalWon += bet; }
-            else if (playerNatural) { msg += `¡BLACKJACK! Ganaste ${Math.floor(bet*2.5)}🪙!`; totalWon += Math.floor(bet*2.5); }
-            else if (dealerNatural) { msg += "Blackjack del crupier. 💀"; }
-            else if (dScore > 21) { msg += `Ganaste ${bet*2}🪙!`; totalWon += bet*2; } 
-            else if (pScore > dScore) { msg += `Ganaste ${bet*2}🪙!`; totalWon += bet*2; } 
-            else if (pScore < dScore) { msg += "Gana el Crupier 💀"; } 
+            else if (playerNatural) { outcome = 'win'; msg += `¡BLACKJACK! Ganaste ${Math.floor(bet*2.5)}🪙!`; totalWon += Math.floor(bet*2.5); }
+            else if (dealerNatural) { outcome = 'loss'; msg += "Blackjack del crupier. 💀"; }
+            else if (dScore > 21) { outcome = 'win'; msg += `Ganaste ${bet*2}🪙!`; totalWon += bet*2; }
+            else if (pScore > dScore) { outcome = 'win'; msg += `Ganaste ${bet*2}🪙!`; totalWon += bet*2; }
+            else if (pScore < dScore) { outcome = 'loss'; msg += "Gana el Crupier 💀"; }
             else { msg += `Empate.`; totalWon += bet; }
+            recordChallengeEvent('blackjack_hand', {
+                outcome,
+                natural: playerNatural,
+                bust: pScore > 21
+            });
             const won = pScore <= 21 && (playerNatural && !dealerNatural || !dealerNatural && (dScore > 21 || pScore > dScore));
             const lost = pScore > 21 || dealerNatural && !playerNatural || !playerNatural && pScore < dScore;
             resultMsgs.push(`<span style="color:${won ? '#4cd137' : (lost ? '#ff4757' : '#fbc531')}">${msg}</span>`);
@@ -212,6 +228,7 @@ export function initBlackjack() {
 
     btnHit.addEventListener('click', () => {
         if(bjState !== 'playing' || !checkSignature()) return;
+        recordChallengeEvent('blackjack_action', { action: 'hit' });
         bjHands[bjActiveHandIdx].push(bjDeck.pop()); renderBjState(true);
         if(getBjScore(bjHands[bjActiveHandIdx]) > 21) advanceBjHand();
     });
@@ -219,6 +236,7 @@ export function initBlackjack() {
     btnDouble.addEventListener('click', () => {
         if(bjState !== 'playing') return;
         if(modificarMonedas(-bjBets[bjActiveHandIdx])) {
+            recordChallengeEvent('blackjack_action', { action: 'double' });
             bjBets[bjActiveHandIdx] *= 2; bjHands[bjActiveHandIdx].push(bjDeck.pop()); renderBjState(true); advanceBjHand();
         }
     });
@@ -226,6 +244,7 @@ export function initBlackjack() {
     btnSplit.addEventListener('click', () => {
         if(bjState !== 'playing') return;
         if(modificarMonedas(-bjBets[0])) {
+            recordChallengeEvent('blackjack_action', { action: 'split' });
             bjBets.push(bjBets[0]); let c1 = bjHands[0][0]; let c2 = bjHands[0][1];
             bjHands = [ [c1, bjDeck.pop()], [c2, bjDeck.pop()] ]; renderBjState(true);
         }
