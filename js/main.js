@@ -5,14 +5,15 @@ import { initRoulette, initBlackjack } from './casino.js';
 
 window.isRunning = false;
 let countdownInterval = null;
-let activeSecondsCounter = 0;
+let activeTimeMs = 0;
+let lastCoinCheckAt = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
     await initCore();
     
-    // Load state and trigger an alert if Anti-cheat caught someone
+    // Avisar si el saldo guardado no coincide con su firma local.
     loadState(() => {
-        showToast("🚨 ANTI-CHEAT: Manipulación de fondos detectada.", true);
+        showToast("🚨 Se detectó una modificación no válida del saldo local.", true);
     });
 
     initUI();
@@ -24,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     function stopApp() {
         clearInterval(countdownInterval); cancelAnim();
-        window.isRunning = false; activeSecondsCounter = 0;
+        window.isRunning = false; activeTimeMs = 0; lastCoinCheckAt = null;
         
         const btn = document.getElementById('startBtn');
         btn.innerText = "Iniciar"; btn.classList.remove('stop-btn');
@@ -41,7 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (window.isRunning) { stopApp(); return; }
         if (!document.getElementById('timeInput').value) { alert('Por favor, selecciona una hora.'); return; }
 
-        window.isRunning = true; activeSecondsCounter = 0;
+        window.isRunning = true; activeTimeMs = 0; lastCoinCheckAt = Date.now();
         
         this.innerText = "Detener"; this.classList.add('stop-btn');
         document.getElementById('message').style.display = 'none';
@@ -59,16 +60,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         clearInterval(countdownInterval);
         countdownInterval = setInterval(function() {
-            const now = new Date().getTime(); const offsetSecs = state.offsetSecs;
+            const now = Date.now(); const offsetSecs = state.offsetSecs;
             const distance = targetDate.getTime() + (offsetSecs * 1000) - now;
-
-            if (state.activeGame !== 'none') {
-                activeSecondsCounter++;
-                if (activeSecondsCounter >= 60) { 
-                    activeSecondsCounter = 0; 
-                    modificarMonedas(1); 
-                }
-            }
 
             if (distance <= 0) {
                 stopApp(); 
@@ -76,6 +69,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById('message').innerText = customMsg !== "" ? customMsg : "¡El tiempo ha terminado! 🎉";
                 document.getElementById('message').style.display = 'block'; return;
             }
+
+            if (lastCoinCheckAt !== null && state.activeGame !== 'none') {
+                activeTimeMs += now - lastCoinCheckAt;
+                const earnedCoins = Math.floor(activeTimeMs / 60000);
+                if (earnedCoins > 0) {
+                    activeTimeMs -= earnedCoins * 60000;
+                    modificarMonedas(earnedCoins);
+                }
+            }
+            lastCoinCheckAt = now;
 
             if (distance <= 60000) document.getElementById('countdownDisplay').classList.add('danger');
             else document.getElementById('countdownDisplay').classList.remove('danger');

@@ -162,14 +162,21 @@ export function initBlackjack() {
     function finishBjResolution() {
         bjState = 'resolved'; renderBjState(false);
         let dScore = getBjScore(bjDealerHand); let totalWon = 0; let resultMsgs = [];
+        const dealerNatural = bjDealerHand.length === 2 && dScore === 21;
         for(let i=0; i<bjHands.length; i++) {
             let pScore = getBjScore(bjHands[i]); let bet = bjBets[i]; let msg = bjHands.length > 1 ? `Mano ${i+1}: ` : "";
+            const playerNatural = bjHands[i].length === 2 && pScore === 21;
             if (pScore > 21) { msg += "Te pasaste. 💀"; } 
+            else if (playerNatural && dealerNatural) { msg += "Empate de blackjacks."; totalWon += bet; }
+            else if (playerNatural) { msg += `¡BLACKJACK! Ganaste ${Math.floor(bet*2.5)}🪙!`; totalWon += Math.floor(bet*2.5); }
+            else if (dealerNatural) { msg += "Blackjack del crupier. 💀"; }
             else if (dScore > 21) { msg += `Ganaste ${bet*2}🪙!`; totalWon += bet*2; } 
             else if (pScore > dScore) { msg += `Ganaste ${bet*2}🪙!`; totalWon += bet*2; } 
             else if (pScore < dScore) { msg += "Gana el Crupier 💀"; } 
             else { msg += `Empate.`; totalWon += bet; }
-            resultMsgs.push(`<span style="color:${(pScore<=21 && (dScore>21 || pScore>dScore)) ? '#4cd137' : (pScore>21 || pScore<dScore ? '#ff4757' : '#fbc531')}">${msg}</span>`);
+            const won = pScore <= 21 && (playerNatural && !dealerNatural || !dealerNatural && (dScore > 21 || pScore > dScore));
+            const lost = pScore > 21 || dealerNatural && !playerNatural || !playerNatural && pScore < dScore;
+            resultMsgs.push(`<span style="color:${won ? '#4cd137' : (lost ? '#ff4757' : '#fbc531')}">${msg}</span>`);
         }
         if(totalWon > 0) modificarMonedas(totalWon);
         uiBjRes.innerHTML = resultMsgs.join("<br>");
@@ -199,10 +206,7 @@ export function initBlackjack() {
         bjBets = [ bjCurrentBet ]; bjActiveHandIdx = 0; renderBjState(true);
 
         if(getBjScore(bjHands[0]) === 21) {
-            bjState = 'resolved'; renderBjState(false); let win = Math.floor(bjBets[0] * 2.5); modificarMonedas(win);
-            uiBjRes.innerHTML = `<span style="color:#4cd137">¡BLACKJACK! Ganaste ${win} 🪙</span>`;
-            btnHit.style.display = 'none'; btnStand.style.display = 'none'; btnDouble.style.display = 'none'; btnSplit.style.display = 'none';
-            btnNewGame.style.display = 'block'; bjCurrentBet = 0; uiBjBetDisp.innerText = bjCurrentBet;
+            finishBjResolution();
         }
     });
 

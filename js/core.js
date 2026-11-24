@@ -9,16 +9,49 @@ export let currentChipValue = 1;
 
 export function setChipValue(val) { currentChipValue = val; }
 
+function createFallbackConfig() {
+    return {
+        version: "v8.4",
+        storageKey: "cuentaAtras_estado",
+        salt: "casino_secure_salt_v8.4",
+        defaultUrl: "",
+        backgrounds: { default: { name: "Clásico", url: "" } }
+    };
+}
+
 export async function initCore() {
     try {
         const response = await fetch('data/config.json');
-        config = await response.json();
-        state.customUrl = config.defaultUrl;
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const loadedConfig = await response.json();
+        if (
+            !loadedConfig ||
+            typeof loadedConfig.version !== "string" ||
+            typeof loadedConfig.storageKey !== "string" ||
+            typeof loadedConfig.salt !== "string" ||
+            !loadedConfig.backgrounds ||
+            typeof loadedConfig.backgrounds !== "object" ||
+            !loadedConfig.backgrounds.default
+        ) {
+            throw new Error("La estructura de data/config.json no es válida.");
+        }
+        config = {
+            ...loadedConfig,
+            defaultUrl: typeof loadedConfig.defaultUrl === "string" ? loadedConfig.defaultUrl : "",
+            backgrounds: Object.fromEntries(
+                Object.entries(loadedConfig.backgrounds).filter(([, background]) =>
+                    background &&
+                    typeof background.name === "string" &&
+                    typeof background.url === "string"
+                )
+            )
+        };
+        if (!config.backgrounds.default) throw new Error("Falta el fondo predeterminado.");
     } catch(e) {
-        console.error("Config fetch error, ensure you are running on a server (e.g. Github Pages)");
-        // Fallback robusto
-        config = { version: "v8.4", storageKey: "cuentaAtras_estado", salt: "casino_secure_salt_v8.4", backgrounds: {'default': {name:'Clásico', url:''}} };
+        console.error("No se pudo cargar data/config.json; se utilizará la configuración alternativa.", e);
+        config = createFallbackConfig();
     }
+    state.customUrl = config.defaultUrl || "";
 }
 
 function generateSignature(coins) {
@@ -48,28 +81,83 @@ export function saveState() {
     // Validacion pre-guardado
     if (state.signature && state.signature !== generateSignature(state.coins)) {
         state.coins = 0; state.signature = generateSignature(0);
-        console.warn("Anti-cheat interceptó guardado ilegal");
+        console.warn("Se detectó un saldo local inconsistente.");
     } else {
         state.signature = generateSignature(state.coins);
     }
-    localStorage.setItem(config.storageKey, JSON.stringify(state));
+    try {
+        localStorage.setItem(config.storageKey, JSON.stringify(state));
+        return true;
+    } catch (error) {
+        console.error("No se pudo guardar el estado local.", error);
+        return false;
+    }
 }
 
 export function loadState(onCorruptCallback) {
-    const storedData = localStorage.getItem(config.storageKey);
+    let storedData;
+    try {
+        storedData = localStorage.getItem(config.storageKey);
+    } catch (error) {
+        console.error("No se pudo leer el estado local.", error);
+        state = { ...state, version: config.version, customUrl: config.defaultUrl || "" };
+        state.signature = generateSignature(state.coins);
+        return;
+    }
+
     if (storedData) {
         try {
             const parsedData = JSON.parse(storedData);
-            if (parsedData.version !== config.version) {
-                parsedData.signature = generateSignature(parsedData.coins); 
-                if (!parsedData.ownedBgs) parsedData.ownedBgs = ['default'];
-                if (!parsedData.activeBg) parsedData.activeBg = 'default';
-            } else if (parsedData.signature && parsedData.signature !== generateSignature(parsedData.coins)) {
-                parsedData.coins = 0; parsedData.signature = generateSignature(0);
+            if (!parsedData || typeof parsedData !== "object" || Array.isArray(parsedData)) {
+                throw new Error("El estado guardado no es un objeto.");
+            }
+
+            const sameVersion = parsedData.version === config.version;
+            const storedCoins = Number.isSafeInteger(parsedData.coins) && parsedData.coins >= 0
+                ? parsedData.coins
+                : 0;
+            const signatureIsValid = parsedData.signature === generateSignature(storedCoins);
+
+            state = {
+                ...state,
+                ...parsedData,
+                version: config.version,
+                coins: storedCoins,
+                offsetSecs: Number.isFinite(parsedData.offsetSecs) ? parsedData.offsetSecs : 0,
+                customMessage: typeof parsedData.customMessage === "string" ? parsedData.customMessage : "¡El tiempo ha terminado! 🎉",
+                customUrl: typeof parsedData.customUrl === "string" ? parsedData.customUrl : (config.defaultUrl || ""),
+                imagesEnabled: typeof parsedData.imagesEnabled === "boolean" && parsedData.imagesEnabled,
+                activeGame: ["none", "roulette", "blackjack"].includes(parsedData.activeGame) ? parsedData.activeGame : "none",
+                ownedBgs: Array.isArray(parsedData.ownedBgs)
+                    ? [...new Set(parsedData.ownedBgs.filter(id => typeof id === "string" && Object.prototype.hasOwnProperty.call(config.backgrounds, id)))]
+                    : ["default"],
+                activeBg: typeof parsedData.activeBg === "string" && Object.prototype.hasOwnProperty.call(config.backgrounds, parsedData.activeBg)
+                    ? parsedData.activeBg
+                    : "default"
+            };
+            if (!state.ownedBgs.includes("default")) state.ownedBgs.unshift("default");
+            if (!state.ownedBgs.includes(state.activeBg)) state.activeBg = "default";
+
+            if (sameVersion && !signatureIsValid) {
+                state.coins = 0;
                 if (onCorruptCallback) onCorruptCallback();
             }
-            state = { ...state, ...parsedData, version: config.version };
-        } catch(e) { state.coins = 0; state.signature = generateSignature(0); }
+            state.signature = generateSignature(state.coins);
+        } catch(error) {
+            console.error("El estado local está dañado; se restablecerá.", error);
+            state = {
+                version: config.version,
+                offsetSecs: 0,
+                customMessage: "¡El tiempo ha terminado! 🎉",
+                customUrl: config.defaultUrl || "",
+                imagesEnabled: false,
+                activeGame: "none",
+                coins: 0,
+                ownedBgs: ["default"],
+                activeBg: "default",
+                signature: generateSignature(0)
+            };
+        }
     } else {
         state.signature = generateSignature(state.coins);
     }

@@ -1,12 +1,15 @@
 import { state, config, modificarMonedas, saveState, currentChipValue, setChipValue } from './core.js';
 import { spawnImages, hideImages, updateCollisionCache } from './physics.js';
 
+let toastTimeout = null;
+
 export function showToast(msg, isDanger = false) {
     const toast = document.getElementById('toast');
     document.getElementById('toastMsg').innerText = msg;
     if (isDanger) toast.classList.add('danger'); else toast.classList.remove('danger');
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 5000);
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => toast.classList.remove('show'), 5000);
 }
 
 export function updateCoinDisplay() {
@@ -88,6 +91,11 @@ function renderStore() {
 }
 
 export function initUI() {
+    document.getElementById('closeToastBtn').addEventListener('click', () => {
+        document.getElementById('toast').classList.remove('show');
+        clearTimeout(toastTimeout);
+    });
+
     document.querySelectorAll('.s-chip').forEach(chip => {
         chip.addEventListener('click', function() {
             setChipValue(parseInt(this.getAttribute('data-val')));
